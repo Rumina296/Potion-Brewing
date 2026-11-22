@@ -1,0 +1,1913 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Potion Brewing Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet" />
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+
+      :root{
+        --bg:#f3ead9;
+        --bg-deep:#e9dcbf;
+        --panel:#fffaf0;
+        --panel-2:#fdf3dd;
+        --ink:#2c2118;
+        --ink-soft:#6b5844;
+        --line:#d9c69c;
+        --gold:#b07d1e;
+        --gold-bright:#d99a26;
+        --plum:#5b2a4a;
+        --plum-deep:#3d1b31;
+        --green:#2e7d4f;
+        --green-soft:#dff2e3;
+        --red:#b23a2e;
+        --red-soft:#fbe3de;
+        --cauldron:#33302e;
+        --shadow:0 10px 30px rgba(60,40,10,.16);
+        --radius:18px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#171019;
+          --bg-deep:#100a13;
+          --panel:#241728;
+          --panel-2:#2d1e33;
+          --ink:#f4e9d6;
+          --ink-soft:#c3ab90;
+          --line:#4a3550;
+          --gold:#e0aa3e;
+          --gold-bright:#f2c14e;
+          --plum:#8a4a72;
+          --plum-deep:#5b2a4a;
+          --green:#5fc98a;
+          --green-soft:#173526;
+          --red:#ff8a7a;
+          --red-soft:#3d1f1c;
+          --cauldron:#0d0b0e;
+          --shadow:0 10px 30px rgba(0,0,0,.45);
+        }
+      }
+      *{ box-sizing:border-box; }
+      html,body{ margin:0; padding:0; }
+      body{
+        font-family:"Nunito", system-ui, sans-serif;
+        background:
+          radial-gradient(900px 500px at 15% -5%, rgba(217,154,38,.14), transparent 60%),
+          radial-gradient(800px 500px at 90% 0%, rgba(91,42,74,.18), transparent 55%),
+          linear-gradient(180deg, var(--bg), var(--bg-deep));
+        color:var(--ink);
+        min-height:100vh;
+      }
+      .wrap{ max-width:760px; margin:0 auto; padding:18px 16px 48px; }
+
+      /* ---------- Header / stats ---------- */
+      .stats{
+        display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin-bottom:14px;
+      }
+      .stat{
+        flex:1 1 100px; background:var(--panel); border:1.5px solid var(--line);
+        border-radius:14px; padding:8px 12px; box-shadow:var(--shadow);
+      }
+      .stat .label{ font-size:.68rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft); }
+      .stat .value{ font-family:"DM Serif Display", serif; font-size:1.45rem; line-height:1.1; }
+      .stat .value small{ font-size:.85rem; font-family:"Nunito",sans-serif; font-weight:800; color:var(--ink-soft); }
+
+      .progress-block{
+        background:var(--panel); border:1.5px solid var(--line); border-radius:14px;
+        padding:10px 14px 12px; box-shadow:var(--shadow); margin-bottom:16px;
+      }
+      .progress-row{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap; }
+      .progress-row .next{ font-weight:800; font-size:.92rem; }
+      .progress-row .next b{ color:var(--gold); }
+      .progress-row .count{ font-size:.82rem; font-weight:700; color:var(--ink-soft); }
+      .bar{ height:10px; background:var(--panel-2); border:1.5px solid var(--line); border-radius:99px; overflow:hidden; margin-top:7px; }
+      .bar > div{ height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:99px; transition:width .6s ease; }
+      .all-done{ font-size:.85rem; font-weight:800; color:var(--green); }
+
+      /* ---------- Panels ---------- */
+      .panel{
+        background:var(--panel); border:1.5px solid var(--line); border-radius:var(--radius);
+        box-shadow:var(--shadow); padding:20px;
+      }
+      h1,h2{ font-family:"DM Serif Display", serif; font-weight:400; margin:0; }
+      .hidden{ display:none !important; }
+
+      /* ---------- Customer ---------- */
+      .customer{ display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; }
+      .avatar{
+        font-size:2.6rem; line-height:1; width:72px; height:72px; flex:0 0 72px;
+        display:flex; align-items:center; justify-content:center;
+        background:var(--panel-2); border:1.5px solid var(--line); border-radius:50%;
+      }
+      .bubble{
+        position:relative; flex:1; background:var(--panel-2); border:1.5px solid var(--line);
+        border-radius:14px; padding:12px 14px;
+      }
+      .bubble::before{
+        content:""; position:absolute; left:-9px; top:24px; width:14px; height:14px;
+        background:var(--panel-2); border-left:1.5px solid var(--line); border-bottom:1.5px solid var(--line);
+        transform:rotate(45deg);
+      }
+      .bubble .who{ font-weight:900; font-size:.95rem; }
+      .bubble .who span{ color:var(--gold); }
+      .bubble p{ margin:4px 0 0; font-size:.98rem; line-height:1.45; }
+      .bubble p b{ color:var(--plum); }
+      @media (prefers-color-scheme: dark){ .bubble p b{ color:var(--gold-bright); } }
+      .avatar{ overflow:hidden; padding:0; }
+      .avatar img{ width:100%; height:100%; object-fit:cover; object-position:center 32%; display:block; }
+
+      /* ---------- Storefront & potion room scenes ---------- */
+      .gl-mount{ position:relative; width:100%; overflow:hidden; background:#241430; }
+      .gl-mount canvas{ display:block; width:100%; height:100%; }
+      .gl-mount .gl-fallback{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+      .gl-mount.gl-on .gl-fallback{ display:none; }
+
+      /* ---------- Full-screen storefront background (front page + taking the order) ---------- */
+      .bg-scene{ position:fixed; inset:0; z-index:0; display:none; }
+      body.front-bg .bg-scene{ display:block; }
+      .bg-scene .gl-mount{ position:absolute; inset:0; height:100%; }
+      .bg-scene .bg-shade{
+        position:absolute; inset:0; pointer-events:none;
+        background:linear-gradient(180deg, rgba(24,12,26,.20), rgba(24,12,26,.04) 42%, rgba(24,12,26,.40));
+      }
+      .wrap{ position:relative; z-index:1; }
+      body.front-bg .stat, body.front-bg .progress-block{
+        background:rgba(26,14,26,.68); border-color:rgba(255,233,184,.38); color:#f7ecd4;
+        backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+      }
+      body.front-bg .stat .label, body.front-bg .stat .value small, body.front-bg .progress-row .count{ color:#dcc79c; }
+      body.front-bg .bar{ background:rgba(255,255,255,.14); border-color:rgba(255,233,184,.35); }
+      body.front-bg .footnote{ color:#efe0bd; text-shadow:0 1px 6px rgba(0,0,0,.65); }
+      body.front-bg #screenStart, body.front-bg #screenGame{
+        background:rgba(22,11,23,.74); border-color:rgba(255,233,184,.38); color:#f7ecd4;
+        backdrop-filter:blur(9px); -webkit-backdrop-filter:blur(9px);
+      }
+      body.front-bg #screenStart .start-hero p{ color:#e9dab6; }
+      body.front-bg #screenStart .howto .step, body.front-bg #screenStart .cast-card{
+        background:rgba(255,250,240,.09); border-color:rgba(255,233,184,.30);
+      }
+      body.front-bg #screenStart .howto .step p{ color:#f7ecd4; }
+      body.front-bg #screenStart .cast-card .cap span{ color:#dcc79c; }
+      body.front-bg #screenStart .btn-ghost{ color:#f7ecd4; border-color:rgba(255,233,184,.45); }
+      body.front-bg #screenGame .bubble{ background:rgba(70,32,58,.88); border-color:rgba(255,233,184,.35); color:#f7ecd4; }
+      body.front-bg #screenGame .bubble::before{ background:#46203a; border-color:rgba(255,233,184,.35); }
+      body.front-bg #screenGame .bubble p b{ color:var(--gold-bright); }
+      body.front-bg #screenGame .recipe-card{ background:rgba(255,250,240,.07); }
+      body.front-bg #screenGame .recipe-desc{ color:#e9dab6; }
+      body.front-bg #screenGame .steps li{ background:rgba(26,14,26,.55); border-color:rgba(255,233,184,.30); color:#f7ecd4; }
+      body.front-bg #screenGame .room-hint{ color:#e9dab6; }
+      .open-sign{
+        display:inline-block; background:var(--plum); color:#ffe9b8;
+        font-weight:900; font-size:.78rem; letter-spacing:.1em; padding:6px 13px; border-radius:99px;
+        box-shadow:0 4px 14px rgba(0,0,0,.35); transform:rotate(-2deg);
+      }
+      .front-tag{
+        display:inline-block; background:rgba(38,20,32,.85); color:#ffe9b8;
+        font-weight:900; font-size:.78rem; letter-spacing:.06em; padding:6px 13px; border-radius:99px; margin-bottom:12px;
+      }
+      .cast-row{ display:flex; gap:12px; margin-top:18px; }
+      .cast-card{ flex:1 1 0; background:var(--panel-2); border:1.5px solid var(--line); border-radius:14px; overflow:hidden; text-align:center; }
+      /* Portraits are tall (1:2) with the faces around 35–45% down the image, so the
+         cards need real height and a face-centred crop — a short landscape crop
+         only ever showed the hat / horns and cut the faces off entirely. */
+      .cast-card img{ width:100%; height:300px; object-fit:cover; object-position:center 38%; display:block; background:#f3e9d2; }
+      .cast-card img.face-witch{ object-position:center 40%; }
+      .cast-card img.face-dragon{ object-position:center 33%; }
+      .cast-card .cap{ padding:8px 10px 10px; font-size:.85rem; font-weight:800; line-height:1.35; }
+      .cast-card .cap span{ display:block; font-weight:700; color:var(--ink-soft); font-size:.78rem; margin-top:2px; }
+      @media (max-width:520px){ .cast-card img{ height:215px; } }
+
+      .scene{ position:relative; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); margin-bottom:16px; }
+      .scene .gl-mount{ height:232px; }
+      @media (max-width:520px){ .scene .gl-mount{ height:204px; } }
+      .scene .scene-tag{
+        position:absolute; top:10px; left:10px; z-index:3; background:rgba(38,20,32,.82); color:#ffe9b8;
+        font-weight:900; font-size:.75rem; letter-spacing:.09em; text-transform:uppercase;
+        padding:6px 12px; border-radius:99px;
+      }
+      .scene .scene-label{
+        position:absolute; left:50%; transform:translateX(-50%); bottom:10px; z-index:3;
+        background:rgba(38,20,32,.85); color:#ffe9b8; font-weight:800; font-size:.86rem;
+        padding:6px 14px; border-radius:99px; white-space:nowrap; max-width:92%;
+        overflow:hidden; text-overflow:ellipsis; pointer-events:none;
+      }
+      .gl-err{
+        position:fixed; left:50%; bottom:74px; transform:translateX(-50%); z-index:60; display:none;
+        background:#5c1f16; color:#ffe9b8; font-weight:700; font-size:.85rem; padding:10px 16px;
+        border-radius:12px; max-width:92vw; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      }
+      .room-hint{ text-align:center; font-size:.85rem; font-weight:700; color:var(--ink-soft); margin-top:8px; }
+      #screenGame.room-mode{ background:linear-gradient(180deg, var(--panel-2), var(--panel)); border-color:var(--gold); }
+
+      /* ---------- Brew stage : full-screen chibi potion room (reference layout) ---------- */
+      body.brew-mode .stats, body.brew-mode .progress-block, body.brew-mode .footnote{ display:none; }
+      body.brew-mode{ background:linear-gradient(180deg,#241430,#171019); }
+      #screenGame.room-mode{ padding:12px; background:#2b1a20; border-color:#6e4a2c; }
+      #screenGame.room-mode .customer{ display:none; }
+      .brew-stage{
+        position:relative; max-width:540px; margin:0 auto; border-radius:20px; overflow:hidden;
+        border:4px solid #5d3d22; box-shadow:0 18px 44px rgba(0,0,0,.5), inset 0 0 0 2px rgba(217,154,38,.45);
+        aspect-ratio:3/4; background:#efe6d4; isolation:isolate;
+      }
+      @media (max-height:760px){ .brew-stage{ aspect-ratio:auto; height:calc(100vh - 190px); min-height:480px; width:min(540px,100%); } }
+      .brew-bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%; z-index:0; }
+      .brew-hud{
+        position:absolute; top:10px; left:10px; right:10px; z-index:8; display:flex; gap:8px; align-items:stretch;
+      }
+      .brew-hud .hud-pill{
+        display:flex; align-items:center; gap:7px; background:linear-gradient(180deg,#fdf6df,#f3e3c2);
+        border:2px solid #8a5f36; border-radius:99px; padding:7px 13px; font-weight:900; font-size:.86rem; color:#4a3220;
+        box-shadow:0 4px 12px rgba(40,20,5,.35); min-height:38px;
+      }
+      .brew-hud .hud-pill.coin{ color:#7c5a12; white-space:nowrap; }
+      .brew-hud .hud-pill.target{ margin-left:auto; background:linear-gradient(180deg,#46203a,#3d1b31); color:#ffe9b8; border-color:#d99a26; max-width:46%; }
+      .brew-hud .hud-pill.target span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .brew-hud .hud-pill.brew-timer{ margin-left:auto; font-variant-numeric:tabular-nums; white-space:nowrap; }
+      .brew-hud .hud-pill.brew-timer + .hud-pill.target{ margin-left:0; }
+      .brew-hud .hud-pill.brew-timer.low{ background:linear-gradient(180deg,#d95f57,#b23a2e); border-color:#7c1f16; color:#fff3e6; animation:timerPulse 1s ease-in-out infinite; }
+      @keyframes timerPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.07);} }
+      @media (max-width:520px){ .brew-hud .hud-pill{ padding:6px 9px; font-size:.78rem; } .brew-hud .hud-pill.target{ max-width:42%; } }
+      @media (prefers-reduced-motion: reduce){ .brew-hud .hud-pill.brew-timer.low{ animation:none; } }
+      .brew-wait{
+        position:absolute; top:58px; left:50%; transform:translateX(-50%); z-index:8; white-space:nowrap;
+        background:rgba(38,20,32,.85); color:#ffe9b8; font-weight:800; font-size:.78rem; padding:5px 12px; border-radius:99px;
+      }
+      /* floating ingredients in the air around the witch */
+      .float-layer{ position:absolute; inset:0; z-index:6; }
+      .float-ing{
+        position:absolute; width:90px; min-height:90px; padding:7px 3px 8px; border-radius:50%;
+        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+        background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(253,243,221,.88) 58%, rgba(243,227,194,.82));
+        border:2.5px solid var(--fc, #d99a26); color:#3a2a18; font-family:inherit; cursor:grab;
+        box-shadow:0 0 0 4px color-mix(in srgb, var(--fc, #d99a26) 26%, transparent), 0 8px 18px rgba(40,20,5,.35);
+        touch-action:none; user-select:none; -webkit-user-select:none; animation:bob 3.4s ease-in-out infinite;
+      }
+      .float-ing .e{ font-size:2.1rem; line-height:1.05; pointer-events:none; }
+      .float-ing .n{ font-size:.66rem; font-weight:900; line-height:1.1; text-align:center; pointer-events:none; max-width:78px; }
+      .float-ing:hover{ filter:brightness(1.05); }
+      .float-ing:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
+      .float-ing.dragging{ cursor:grabbing; animation:none; z-index:60; filter:brightness(1.07); box-shadow:0 0 0 5px color-mix(in srgb, var(--fc, #d99a26) 40%, transparent), 0 16px 30px rgba(40,20,5,.45); }
+      .float-ing.returning{ transition:left .35s ease, top .35s ease; }
+      @keyframes bob{ 0%,100%{ transform:translateY(0) rotate(-2deg);} 50%{ transform:translateY(-8px) rotate(2deg);} }
+      /* cauldron drop zone, aligned over the painted cauldron */
+      .cauldron-drop{
+        position:absolute; z-index:5; left:9%; right:9%; bottom:2.5%; height:37%; border-radius:50% 50% 46% 46%;
+        display:flex; align-items:flex-start; justify-content:center;
+      }
+      .cauldron-drop .drop-hint{
+        margin-top:9%; background:rgba(24,12,20,.72); color:#ffe9b8; font-weight:900; font-size:.8rem;
+        padding:6px 14px; border-radius:99px; pointer-events:none; transition:opacity .3s ease; text-align:center;
+      }
+      .cauldron-drop.over{ box-shadow:0 0 0 3px rgba(255,233,184,.85), 0 0 44px 10px var(--brew-glow, rgba(134,217,94,.55)); }
+      .cauldron-drop.over .drop-hint{ background:var(--plum); }
+      .splash-bit{ position:absolute; z-index:9; font-size:1.3rem; pointer-events:none; animation:splashUp .7s ease-out forwards; }
+      @keyframes splashUp{ 0%{ transform:translateY(0) scale(.7); opacity:1;} 100%{ transform:translateY(-52px) scale(1.25); opacity:0;} }
+      .cauldron-drop.pulse{ animation:potPulse .45s ease; }
+      @keyframes potPulse{ 0%{ transform:scale(1);} 35%{ transform:scale(1.025);} 100%{ transform:scale(1);} }
+      /* bottom parchment dock, overlapping the stage like the reference */
+      .brew-dock{
+        position:relative; z-index:10; max-width:500px; margin:-52px auto 4px; display:flex; gap:9px; align-items:stretch;
+        background:linear-gradient(180deg,#fdf6df,#f1e0ba); border:2.5px solid #8a5f36; border-radius:16px;
+        padding:10px; box-shadow:0 12px 28px rgba(0,0,0,.45);
+      }
+      .brew-dock .dock-side{ display:flex; flex-direction:column; gap:8px; flex:0 0 86px; }
+      .dock-btn{
+        appearance:none; cursor:pointer; font-family:inherit; flex:1; border:2px solid #6e4a2c; border-radius:11px;
+        background:linear-gradient(180deg,#4a3220,#38241a); color:#f3e3c2; font-weight:900; font-size:.8rem; padding:8px 4px; min-height:44px;
+      }
+      .dock-btn:hover{ filter:brightness(1.18); } .dock-btn:disabled{ opacity:.45; cursor:not-allowed; }
+      .dock-btn.brew{ background:linear-gradient(180deg,#6b2f56,#46203a); border-color:#d99a26; color:#ffe9b8; font-size:.88rem; }
+      .dock-center{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-width:0; }
+      .dock-center .slots{ margin-top:0; min-height:44px; }
+      .dock-center .slot{ width:42px; height:42px; font-size:1.2rem; background:#fffaf0; }
+      .brew-status{ font-weight:800; color:#6b5844; font-size:.8rem; text-align:center; line-height:1.3; }
+      .brew-color{ display:inline-block; width:11px; height:11px; border-radius:50%; border:1.5px solid rgba(0,0,0,.25); vertical-align:-1px; margin-right:4px; background:#7a9a4d; }
+      .drag-tip{ text-align:center; color:#e9dab6; font-size:.82rem; font-weight:700; margin-top:10px; }
+      @media (max-width:520px){
+        .float-ing{ width:76px; min-height:76px; padding:6px 2px 7px; } .float-ing .e{ font-size:1.8rem; } .float-ing .n{ font-size:.59rem; max-width:66px; }
+        .brew-dock .dock-side{ flex-basis:74px; } .dock-center .slot{ width:36px; height:36px; }
+        #screenGame.room-mode{ padding:8px; }
+      }
+      @media (prefers-reduced-motion: reduce){ .float-ing,.cauldron-drop.pulse,.splash-bit{ animation:none; } }
+
+      /* ---------- Whole-game isometric shop restyle (warm wood · red carpet · pastel) ---------- */
+      body{ background-image:repeating-linear-gradient(90deg, rgba(138,95,54,.05) 0 46px, rgba(138,95,54,.11) 46px 48px); }
+      .panel{ border:3px solid #8a5f36; border-radius:22px; box-shadow:0 6px 0 rgba(90,55,25,.22), var(--shadow); }
+      .stat{ background:linear-gradient(180deg,#fff6df,#f7e3bd); border:2.5px solid #8a5f36; border-radius:16px; box-shadow:0 4px 0 rgba(90,55,25,.20); }
+      .progress-block{ background:linear-gradient(180deg,#fff6df,#f7e3bd); border:2.5px solid #8a5f36; border-radius:16px; }
+      .bar > div{ background:linear-gradient(90deg,#c94f4f,#e8a91c); }
+      .btn-primary{ background:linear-gradient(180deg,#e0685c,#c94f4f); color:#fff8ec; box-shadow:0 4px 0 #8c3226; }
+      .btn-primary:hover{ filter:brightness(1.08); }
+      .open-sign{ background:#c94f4f; color:#fff8ec; }
+      .recipe-card{ border:3px solid #8a5f36; background:linear-gradient(180deg,#fff6df,#fbeed3); border-radius:16px; }
+      .steps .num{ background:#c94f4f; color:#fff8ec; }
+      .steps li{ border:2px solid #d9b98c; border-radius:14px; }
+      .bubble{ border:2.5px solid #8a5f36; }
+      .bubble::before{ border-color:#8a5f36; }
+      .avatar{ border:2.5px solid #8a5f36; background:#f7e3bd; }
+      .timer-bar > div{ background:linear-gradient(90deg,#c94f4f,#e8a91c); }
+      .front-tag{ background:#8a5f36; color:#fff3d6; }
+      .cast-card,.howto .step{ border:2.5px solid #8a5f36; border-radius:16px; }
+      .book-card{ border:2.5px solid #8a5f36; border-radius:16px; }
+      .lvl-pill{ background:#c94f4f; color:#fff8ec; }
+      .unlock-banner{ border-color:#c94f4f; }
+      /* front page over the isometric shop: warm cream parchment UI, not dark glass */
+      .bg-scene .bg-shade{ background:linear-gradient(180deg, rgba(59,36,18,.16), rgba(59,36,18,0) 40%, rgba(59,36,18,.28)); }
+      body.front-bg .stat, body.front-bg .progress-block{
+        background:linear-gradient(180deg, rgba(255,246,223,.94), rgba(247,227,189,.94)); border-color:#8a5f36; color:#4a3220;
+        backdrop-filter:none; -webkit-backdrop-filter:none;
+      }
+      body.front-bg .stat .label, body.front-bg .stat .value small, body.front-bg .progress-row .count{ color:#8a6a44; }
+      body.front-bg .bar{ background:rgba(138,95,54,.18); border-color:#8a5f36; }
+      body.front-bg #screenStart, body.front-bg #screenGame{
+        background:rgba(255,248,231,.93); border-color:#8a5f36; color:#3d2a18;
+        backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+      }
+      body.front-bg #screenStart .start-hero p{ color:#6b5844; }
+      body.front-bg #screenStart .howto .step, body.front-bg #screenStart .cast-card{ background:rgba(255,250,238,.85); border-color:#8a5f36; }
+      body.front-bg #screenStart .howto .step p{ color:#3d2a18; }
+      body.front-bg #screenStart .cast-card .cap span{ color:#8a6a44; }
+      body.front-bg #screenStart .btn-ghost{ color:#4a3220; border-color:#8a5f36; }
+      body.front-bg #screenGame .bubble{ background:#fdf3dd; border-color:#8a5f36; color:#3d2a18; }
+      body.front-bg #screenGame .bubble::before{ background:#fdf3dd; border-color:#8a5f36; }
+      body.front-bg #screenGame .bubble p b{ color:#c94f4f; }
+      body.front-bg #screenGame .recipe-card{ background:linear-gradient(180deg,#fff6df,#fbeed3); }
+      body.front-bg #screenGame .recipe-desc{ color:#6b5844; }
+      body.front-bg #screenGame .steps li{ background:#fffaf0; border-color:#d9b98c; color:#3d2a18; }
+      body.front-bg #screenGame .room-hint{ color:#5d4630; }
+      body.front-bg .footnote{ color:#fff8ec; text-shadow:0 1px 6px rgba(40,20,5,.8); }
+      /* brew dock gets the red-carpet strip */
+      .brew-dock{ background:linear-gradient(180deg,#d95f57 0 12px, #fdf6df 12px, #f1e0ba); border-color:#8a5f36; }
+
+      /* ---------- Recipe card ---------- */
+      .recipe-card{
+        border:2px dashed var(--gold); border-radius:14px; padding:16px;
+        background:linear-gradient(180deg, var(--panel-2), var(--panel));
+      }
+      .recipe-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+      .recipe-head h2{ font-size:1.5rem; }
+      .recipe-head .tag{ font-size:.72rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); }
+      .recipe-desc{ color:var(--ink-soft); font-size:.92rem; margin:6px 0 12px; line-height:1.45; }
+      .steps{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+      .steps li{
+        display:flex; align-items:center; gap:12px; background:var(--panel);
+        border:1.5px solid var(--line); border-radius:12px; padding:8px 12px; font-weight:800; font-size:1.02rem;
+      }
+      .steps .num{
+        width:28px; height:28px; flex:0 0 28px; border-radius:50%; background:var(--plum); color:#ffe9b8;
+        display:flex; align-items:center; justify-content:center; font-size:.9rem; font-weight:900;
+      }
+      .steps .ing-emoji{ font-size:1.35rem; }
+      .steps .ing-dot{ width:12px; height:12px; border-radius:50%; margin-left:auto; border:1.5px solid rgba(0,0,0,.18); }
+
+      .timer-wrap{ margin-top:16px; }
+      .timer-row{ display:flex; justify-content:space-between; align-items:baseline; font-weight:800; font-size:.9rem; }
+      .timer-row .secs{ font-family:"DM Serif Display",serif; font-size:1.3rem; color:var(--gold); }
+      .timer-bar{ height:12px; border-radius:99px; background:var(--panel-2); border:1.5px solid var(--line); overflow:hidden; margin-top:5px; }
+      .timer-bar > div{ height:100%; width:100%; background:linear-gradient(90deg, var(--plum), var(--gold-bright)); transition:width .1s linear; }
+      .timer-bar.low > div{ background:var(--red); }
+
+      /* ---------- Buttons ---------- */
+      .btn{
+        appearance:none; border:none; cursor:pointer; font-family:inherit; font-weight:900;
+        border-radius:12px; padding:12px 20px; font-size:1rem; min-height:48px;
+        display:inline-flex; align-items:center; justify-content:center; gap:8px;
+        transition:transform .08s ease, filter .15s ease, opacity .15s ease;
+      }
+      .btn:active{ transform:scale(.97); }
+      .btn-primary{ background:var(--plum); color:#ffe9b8; box-shadow:0 4px 0 var(--plum-deep); width:100%; font-size:1.08rem; }
+      .btn-primary:hover{ filter:brightness(1.12); }
+      .btn-gold{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#2c1c02; box-shadow:0 4px 0 #7c5a12; }
+      .btn-gold:hover{ filter:brightness(1.07); }
+      .btn-ghost{ background:transparent; color:var(--ink); border:1.5px solid var(--line); }
+      .btn-ghost:hover{ border-color:var(--gold); }
+      .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+      .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+      .btn-row .btn{ flex:1 1 140px; }
+      .btn-primary.full{ flex:1 1 100%; }
+
+      /* ---------- Cauldron ---------- */
+      .cauldron-zone{ display:flex; flex-direction:column; align-items:center; margin:6px 0 4px; }
+      .cauldron{ position:relative; width:190px; height:150px; }
+      .liquid{
+        position:absolute; top:16px; left:50%; transform:translateX(-50%);
+        width:158px; height:38px; border-radius:50%;
+        background:#7a9a4d; border:3px solid #232120; overflow:hidden;
+        transition:background .5s ease;
+      }
+      .bubble-dot{
+        position:absolute; border-radius:50%; background:rgba(255,255,255,.5);
+        animation:rise 2.2s ease-in infinite;
+      }
+      @keyframes rise{ 0%{ transform:translateY(14px); opacity:0;} 30%{opacity:.9;} 100%{ transform:translateY(-16px); opacity:0;} }
+      .pot{
+        position:absolute; top:30px; left:50%; transform:translateX(-50%);
+        width:172px; height:104px; background:var(--cauldron);
+        border-radius:16px 16px 90px 90px / 10px 10px 80px 80px;
+        box-shadow:inset 0 -14px 24px rgba(0,0,0,.5), inset 0 8px 12px rgba(255,255,255,.08);
+      }
+      .pot::before,.pot::after{
+        content:""; position:absolute; bottom:-12px; width:16px; height:20px; background:var(--cauldron); border-radius:4px;
+      }
+      .pot::before{ left:26px; transform:rotate(14deg); }
+      .pot::after{ right:26px; transform:rotate(-14deg); }
+      .fire{ font-size:1.5rem; text-align:center; margin-top:16px; letter-spacing:.4em; animation:flicker 1s ease-in-out infinite alternate; }
+      @keyframes flicker{ from{ opacity:.65; transform:scale(.97);} to{ opacity:1; transform:scale(1.03);} }
+      @media (prefers-reduced-motion: reduce){
+        .bubble-dot,.fire,.chibi .face{ animation:none; }
+        *{ transition:none !important; }
+      }
+      .slots{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:14px; min-height:52px; }
+      .slot{
+        width:48px; height:48px; border-radius:12px; border:2px dashed var(--line);
+        display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:var(--panel-2);
+      }
+      .slot.filled{ border-style:solid; border-color:var(--gold); background:var(--panel); animation:pop .25s ease; }
+      .slot .q{ color:var(--ink-soft); font-weight:900; font-size:1rem; }
+      @keyframes pop{ 0%{ transform:scale(.7);} 60%{ transform:scale(1.12);} 100%{ transform:scale(1);} }
+      .brew-status{ font-weight:800; color:var(--ink-soft); font-size:.92rem; margin-top:8px; text-align:center; }
+
+      /* ---------- Ingredient shelf ---------- */
+      .shelf-title{ font-weight:900; font-size:.8rem; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft); margin:18px 0 10px; }
+      .shelf{ display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr)); gap:10px; }
+      .ing-btn{
+        appearance:none; cursor:pointer; font-family:inherit; text-align:center;
+        background:var(--panel-2); border:1.5px solid var(--line); border-radius:14px;
+        padding:12px 6px 10px; min-height:84px; color:var(--ink);
+        transition:transform .08s ease, border-color .15s ease;
+      }
+      .ing-btn:hover{ border-color:var(--gold); }
+      .ing-btn:active{ transform:scale(.94); }
+      .ing-btn .e{ font-size:1.7rem; display:block; line-height:1.15; }
+      .ing-btn .n{ font-size:.8rem; font-weight:800; display:block; margin-top:3px; line-height:1.2; }
+      .ing-btn .swatch{ display:block; width:22px; height:6px; border-radius:99px; margin:6px auto 0; }
+
+      /* ---------- Result ---------- */
+      .result-hero{ text-align:center; padding:8px 0 4px; }
+      .result-hero .big{ font-size:3.4rem; line-height:1; }
+      .result-hero h2{ font-size:1.9rem; margin-top:8px; }
+      .result-hero p{ color:var(--ink-soft); line-height:1.55; margin:8px auto 0; max-width:46ch; }
+      .points-chip{
+        display:inline-block; margin-top:12px; background:var(--green-soft); color:var(--green);
+        font-weight:900; border-radius:99px; padding:7px 16px; font-size:1rem; border:1.5px solid currentColor;
+      }
+      .points-chip.bad{ background:var(--red-soft); color:var(--red); }
+      .reveal{ margin-top:16px; }
+      .reveal .lbl{ font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+      .reveal-row{ display:flex; gap:6px; flex-wrap:wrap; }
+      .mini{
+        display:inline-flex; align-items:center; gap:6px; background:var(--panel-2);
+        border:1.5px solid var(--line); border-radius:99px; padding:6px 12px; font-weight:800; font-size:.88rem;
+      }
+      .mini.ok{ border-color:var(--green); }
+      .mini.wrong{ border-color:var(--red); }
+      .mini .pos{ font-size:.7rem; color:var(--ink-soft); font-weight:900; }
+      .unlock-banner{
+        margin-top:16px; border:2px solid var(--gold); border-radius:14px; padding:14px 16px;
+        background:linear-gradient(180deg, var(--panel-2), var(--panel)); text-align:center;
+        animation:pop .4s ease;
+      }
+      .unlock-banner .u-tag{ font-size:.72rem; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); }
+      .unlock-banner .u-name{ font-family:"DM Serif Display",serif; font-size:1.45rem; margin-top:2px; }
+      .unlock-banner p{ margin:4px 0 0; color:var(--ink-soft); font-size:.9rem; }
+
+      /* ---------- Start screen ---------- */
+      .start-hero{ text-align:center; padding:10px 0 2px; }
+      .start-hero .big{ font-size:3.6rem; }
+      .start-hero h1{ font-size:2.1rem; margin-top:6px; }
+      .start-hero p{ color:var(--ink-soft); line-height:1.6; max-width:52ch; margin:10px auto 0; }
+      .howto{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin-top:18px; text-align:left; }
+      .howto .step{ background:var(--panel-2); border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; }
+      .howto .step .n{ font-family:"DM Serif Display",serif; color:var(--gold); font-size:1.2rem; }
+      .howto .step p{ margin:3px 0 0; font-size:.88rem; line-height:1.45; color:var(--ink); }
+
+      /* ---------- Stage roadmap (start screen) ---------- */
+      .stage-road{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:8px; margin-top:14px; text-align:left; }
+      .stage-road-title{ grid-column:1 / -1; text-align:center; font-weight:900; font-size:.82rem; letter-spacing:.07em; text-transform:uppercase; color:var(--gold); }
+      .stage-chip{ background:var(--panel-2); border:2px solid #d9b98c; border-radius:12px; padding:8px 11px; font-size:.85rem; }
+      .stage-chip b{ display:block; font-size:.88rem; }
+      .stage-chip span{ color:var(--ink-soft); font-weight:700; font-size:.8rem; }
+      .stage-chip.final{ border-color:#c94f4f; background:linear-gradient(180deg,#fdf3dd,#fbe3de); }
+      body.front-bg #screenStart .stage-chip{ background:rgba(255,250,238,.85); border-color:#8a5f36; }
+      body.front-bg #screenStart .stage-chip span{ color:#8a6a44; }
+      body.front-bg #screenStart .stage-chip.final{ border-color:#c94f4f; }
+
+      /* ---------- Recipe book ---------- */
+      .book-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:12px; margin-top:14px; }
+      .book-card{ border:1.5px solid var(--line); border-radius:14px; padding:14px; background:var(--panel-2); }
+      .book-card.locked{ opacity:.75; }
+      .book-card .bc-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+      .book-card h3{ font-family:"DM Serif Display",serif; font-weight:400; font-size:1.15rem; margin:0; }
+      .book-card .bc-emoji{ font-size:1.5rem; }
+      .book-card p{ font-size:.85rem; color:var(--ink-soft); line-height:1.45; margin:6px 0 0; }
+      .book-card .bc-steps{ margin-top:9px; display:flex; flex-direction:column; gap:4px; font-size:.86rem; font-weight:700; }
+      .book-card .bc-meta{ margin-top:9px; font-size:.78rem; font-weight:800; color:var(--gold); }
+      .book-card .bc-lock{ margin-top:9px; font-size:.82rem; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
+      .lvl-pill{ font-size:.68rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; background:var(--plum); color:#ffe9b8; border-radius:99px; padding:3px 9px; white-space:nowrap; }
+      .lvl-pill.lock{ background:var(--panel); color:var(--ink-soft); border:1.5px solid var(--line); }
+
+      .toast{
+        position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px);
+        background:var(--plum-deep); color:#ffe9b8; font-weight:800; padding:12px 20px; border-radius:99px;
+        box-shadow:0 10px 30px rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:all .3s ease; z-index:50;
+        max-width:92vw; text-align:center; font-size:.95rem;
+      }
+      .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+      .footnote{ text-align:center; color:var(--ink-soft); font-size:.82rem; margin-top:18px; line-height:1.5; }
+    </style>
+  </head>
+  <body class="front-bg">
+    <!-- Full-screen storefront backdrop: the 3D shop scene fills the whole page behind the front-page UI -->
+    <div class="bg-scene" id="bgScene" aria-hidden="true">
+      <div class="gl-mount" id="mountBg">
+        <img class="gl-fallback" src="assets/iso-shop.webp" alt="" style="object-position:center 38%;" />
+      </div>
+      <div class="bg-shade"></div>
+    </div>
+    <div class="wrap">
+
+      <!-- Stats -->
+      <div class="stats" aria-label="Your progress">
+        <div class="stat"><div class="label">✦ Brew Points</div><div class="value" id="statScore">0</div></div>
+        <div class="stat"><div class="label">Customers Served</div><div class="value" id="statServed">0</div></div>
+        <div class="stat"><div class="label">Streak</div><div class="value" id="statStreak">0 <small id="statBest"></small></div></div>
+        <div class="stat"><div class="label">Rank</div><div class="value" id="statRank" style="font-size:1.05rem; padding-top:6px;">Apprentice</div></div>
+      </div>
+
+      <div class="progress-block" id="progressBlock">
+        <div class="progress-row">
+          <div class="next" id="stageText">Stage 1 · <b>First Sips</b> — memorize 3 ingredients</div>
+          <div class="count" id="stageCount">Stage 1 of 8</div>
+        </div>
+        <div class="progress-row" style="margin-top:6px;">
+          <div class="next" id="nextUnlockText" style="font-size:.85rem;">Next unlock: <b>—</b></div>
+          <div class="count" id="unlockCount">3 / 12 recipes</div>
+        </div>
+        <div class="bar"><div id="progressFill"></div></div>
+      </div>
+
+      <!-- START -->
+      <section class="panel" id="screenStart">
+        <div class="start-hero">
+          <span class="open-sign">✦ OPEN ✦</span>
+          <h1>The Wandering Cauldron</h1>
+          <p>A cozy little potion shop at the edge of the enchanted woods. Customers wander in with strange ailments and stranger requests — your job is to brew exactly what they need, from memory.</p>
+        </div>
+        <div class="cast-row">
+          <div class="cast-card">
+            <img class="face-witch" src="assets/chibi-witch.webp" alt="Chibi witch shopkeeper in a plum starry hat and cream apron, waving and holding a sparkling purple potion" />
+            <div class="cap">That's you!<span>The witch behind the counter</span></div>
+          </div>
+          <div class="cast-card">
+            <img class="face-dragon" src="assets/chibi-dragon.webp" alt="Chibi baby green dragon with a bandaged wing, holding out an empty potion bottle hopefully" />
+            <div class="cap">Bramble<span>Your most loyal (and clumsiest) customer</span></div>
+          </div>
+        </div>
+        <div class="howto">
+          <div class="step"><div class="n">1 · At the Counter</div><p>A chibi customer orders at the counter inside the shop. Their recipe appears for <b>10 seconds</b> (a little longer in later stages) — ingredients <i>and</i> their order. Memorize it!</p></div>
+          <div class="step"><div class="n">2 · To the Potion Room</div><p>Click through to the potion room — the recipe stays at the counter. Drag the floating ingredients into the cauldron in the exact order you remember, before the customer's patience timer runs out!</p></div>
+          <div class="step"><div class="n">3 · Serve &amp; Unlock</div><p>Nail the recipe to earn Brew Points and serve the customer. Every few successes unlocks a brand-new potion for your recipe book.</p></div>
+        </div>
+        <div class="stage-road" aria-label="The eight stages">
+          <div class="stage-road-title">✦ The Climb — 8 stages, longer memories ✦</div>
+          <div class="stage-chip"><b>Stage 1 · First Sips</b><span>3 ingredients</span></div>
+          <div class="stage-chip"><b>Stage 2 · Steady Stirrer</b><span>4 ingredients · first repeats</span></div>
+          <div class="stage-chip"><b>Stage 3 · Keen Nose</b><span>5 ingredients</span></div>
+          <div class="stage-chip"><b>Stage 4 · Sharp Memory</b><span>6 ingredients</span></div>
+          <div class="stage-chip"><b>Stage 5 · Cauldron Mind</b><span>7 ingredients</span></div>
+          <div class="stage-chip"><b>Stage 6 · Potion Sage</b><span>8 ingredients</span></div>
+          <div class="stage-chip"><b>Stage 7 · Master of Memory</b><span>9 ingredients</span></div>
+          <div class="stage-chip final"><b>Stage 8 · Legendary Recall</b><span>10 ingredients · repeats galore</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary full" id="btnStart">Open the Shop 🔮</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btnBookStart">📖 Recipe Book</button>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section class="panel hidden" id="screenGame">
+        <div class="customer">
+          <div class="avatar" id="custAvatar" aria-hidden="true">🦉</div>
+          <div class="bubble">
+            <div class="who" id="custName">Customer</div>
+            <p id="custLine"></p>
+          </div>
+        </div>
+
+        <!-- Memorize phase : at the storefront -->
+        <div id="phaseMemorize">
+          <span class="front-tag">🏠 Inside the Shop · <span id="stageName">Customer</span> is ordering at the counter</span>
+          <span class="front-tag" id="orderStageTag" style="background:#c94f4f; color:#fff8ec;">Stage 1 · Memorize 3 ingredients</span>
+          <div class="recipe-card">
+            <div class="recipe-head">
+              <h2 id="recipeName">Potion</h2>
+              <span class="tag">Memorize the order!</span>
+            </div>
+            <p class="recipe-desc" id="recipeDesc"></p>
+            <ol class="steps" id="recipeSteps"></ol>
+          </div>
+          <div class="timer-wrap">
+            <div class="timer-row"><span>⏱ Recipe vanishes in…</span><span class="secs" id="timerSecs">10.0</span></div>
+            <div class="timer-bar" id="timerBar"><div id="timerFill"></div></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary full" id="btnSkip">I've Got It — To the Potion Room → 🧪</button>
+          </div>
+          <p class="room-hint">The recipe stays here at the counter — once you step into the potion room, it's all memory.</p>
+        </div>
+
+        <!-- Brew phase : inside the potion room, witch + cauldron front and centre -->
+        <div id="phaseBrew" class="hidden">
+          <div class="brew-stage" id="brewStage">
+            <img class="brew-bg" src="assets/brew-witch.webp" alt="Cozy chibi witch in a purple starry hat and cream apron standing behind a huge black cauldron in her potion room, shelves of glowing bottles, hanging herbs, a sleeping cat and a moonlit window behind her" />
+            <div class="brew-hud">
+              <div class="hud-pill coin">🪙 <span id="brewScore">0</span></div>
+              <div class="hud-pill brew-timer" id="brewTimerPill" role="timer" aria-label="Time left to brew">⏱ <span id="brewTimerSecs">45</span>s</div>
+              <div class="hud-pill target">🧪 <span id="brewTarget">Potion</span></div>
+            </div>
+            <div class="brew-wait" id="stageNameRoom">Customer waits outside</div>
+            <div class="float-layer" id="floatLayer" aria-label="Floating ingredients — drag them into the cauldron, or tap to add"></div>
+            <div class="cauldron-drop" id="cauldronDrop" aria-hidden="true">
+              <div class="drop-hint" id="dropHint">✦ Drag ingredients into the pot ✦</div>
+            </div>
+          </div>
+          <div class="brew-dock">
+            <div class="dock-side">
+              <button class="dock-btn" id="btnUndo" type="button">↩ Undo</button>
+              <button class="dock-btn" id="btnClear" type="button">Empty Pot</button>
+            </div>
+            <div class="dock-center">
+              <div class="slots" id="slots" aria-label="Ingredients added so far"></div>
+              <div class="brew-status" id="brewStatus">Drag the floating ingredients into the cauldron — in the order from the recipe.</div>
+            </div>
+            <div class="dock-side">
+              <button class="dock-btn brew" id="btnBrew" type="button" disabled>Brew It! 🧪</button>
+            </div>
+          </div>
+          <p class="drag-tip">Ingredients float in the air around you — drag one into the cauldron to drop it in, or just tap it. Wrong order? Undo takes the last one back out. ⏱ When the timer hits zero, whatever is in the pot gets served as-is!</p>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="panel hidden" id="screenResult">
+        <div class="customer">
+          <div class="avatar" id="resAvatar" aria-hidden="true">🦉</div>
+          <div class="bubble">
+            <div class="who" id="resName">Customer</div>
+            <p id="resLine"></p>
+          </div>
+        </div>
+        <div class="result-hero">
+          <div class="big" id="resEmoji" aria-hidden="true">✨</div>
+          <h2 id="resTitle">Perfect Brew!</h2>
+          <p id="resText"></p>
+          <div><span class="points-chip" id="resPoints">+100 points</span></div>
+        </div>
+        <div class="reveal">
+          <div class="lbl" id="revealLblYours">What you brewed</div>
+          <div class="reveal-row" id="revealYours"></div>
+        </div>
+        <div class="reveal hidden" id="revealCorrectWrap">
+          <div class="lbl">The true recipe was</div>
+          <div class="reveal-row" id="revealCorrect"></div>
+        </div>
+        <div class="unlock-banner hidden" id="unlockBanner">
+          <div class="u-tag">✦ New Recipe Unlocked ✦</div>
+          <div class="u-name" id="unlockName"></div>
+          <p id="unlockDesc"></p>
+        </div>
+        <div class="unlock-banner hidden" id="stageBanner">
+          <div class="u-tag">✦ Stage Up ✦</div>
+          <div class="u-name" id="stageUpName"></div>
+          <p id="stageUpDesc"></p>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnNext">Next Customer →</button>
+          <button class="btn btn-ghost" id="btnBookResult">📖 Recipe Book</button>
+        </div>
+      </section>
+
+      <!-- BOOK -->
+      <section class="panel hidden" id="screenBook">
+        <div class="recipe-head">
+          <h2 style="font-size:1.6rem;">📖 Recipe Book</h2>
+          <span class="tag" id="bookCount"></span>
+        </div>
+        <p class="recipe-desc">Study up between customers. Locked potions unlock as you serve more customers successfully — keep that streak bubbling. These are the base recipes: as you climb the stages, each order grows — extra ingredients (including repeats of ones already in the recipe) are stirred in, all the way up to 10 steps at Stage 8.</p>
+        <div class="book-grid" id="bookGrid"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary full" id="btnBookBack">Back</button>
+        </div>
+      </section>
+
+      <p class="footnote">Recipes hide when the timer runs out — trust your memory, witch. Progress lives for this visit to the shop.</p>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div class="gl-err" id="glError" role="alert"></div>
+
+    <script>
+      // ---------------- Data ----------------
+      var INGREDIENTS = [
+        { id:"moonpetal",   name:"Moonpetal",     emoji:"🌸", color:"#e59ac2" },
+        { id:"dragonscale", name:"Dragon Scale",  emoji:"🐉", color:"#3f9e63" },
+        { id:"stardust",    name:"Stardust",      emoji:"⭐", color:"#f2c14e" },
+        { id:"frogleg",     name:"Frog Leg",      emoji:"🐸", color:"#8fce62" },
+        { id:"phoenix",     name:"Phoenix Feather", emoji:"🪶", color:"#e86a3c" },
+        { id:"mushroom",    name:"Glowshroom",    emoji:"🍄", color:"#c65b8f" },
+        { id:"crystal",     name:"Crystal Shard", emoji:"💎", color:"#6fb7d6" },
+        { id:"emberroot",   name:"Ember Root",    emoji:"🌶️", color:"#d64533" },
+        { id:"ghostmist",   name:"Ghost Mist",    emoji:"🌫️", color:"#b9c4cc" },
+        { id:"mermaid",     name:"Mermaid Scale", emoji:"🧜‍♀️", color:"#4fb3a9" },
+        { id:"wolfsbane",   name:"Wolfsbane",     emoji:"🌿", color:"#5d8a4a" },
+        { id:"honey",       name:"Golden Honey",  emoji:"🍯", color:"#e8a91c" }
+      ];
+      function ing(id){ for (var i=0;i<INGREDIENTS.length;i++) if (INGREDIENTS[i].id===id) return INGREDIENTS[i]; return null; }
+
+      // unlockAt = successful serves needed to unlock. First 3 start unlocked.
+      var RECIPES = [
+        { id:"healing",  name:"Healing Draught",    emoji:"💚", unlockAt:0,  desc:"Mends scraped knees, broken wings, and bruised pride.",
+          steps:["moonpetal","honey","mermaid"], brewedLine:"Warmth spreads like spring sunshine. Fully mended!" },
+        { id:"glow",     name:"Glow Tonic",         emoji:"🌟", unlockAt:0,  desc:"Makes the drinker glow softly for one whole evening.",
+          steps:["stardust","mushroom","honey"], brewedLine:"A soft golden glow blooms. No lantern needed tonight!" },
+        { id:"giggle",   name:"Giggle Elixir",      emoji:"😄", unlockAt:0,  desc:"Guaranteed uncontrollable giggles for exactly one hour.",
+          steps:["honey","moonpetal","frogleg"], brewedLine:"Snorts. Chuckles. Full belly laughs. It works every time." },
+        { id:"invisible",name:"Invisibility Mist",  emoji:"👻", unlockAt:2,  desc:"Ten minutes of being gloriously unseen. Use responsibly.",
+          steps:["ghostmist","crystal","moonpetal","stardust"], brewedLine:"Poof — gone! Only footprints and a giggle remain." },
+        { id:"dragonbreath", name:"Dragon's Breath Brew", emoji:"🔥", unlockAt:4, desc:"One sip, one very impressive fire burp.",
+          steps:["emberroot","dragonscale","phoenix","honey"], brewedLine:"FWOOOSH! A magnificent, slightly singed success." },
+        { id:"love",     name:"Love Potion No. 9",   emoji:"💕", unlockAt:6,  desc:"The classic. Smells like roses and questionable decisions.",
+          steps:["moonpetal","honey","stardust","mermaid","phoenix"], brewedLine:"Hearts practically float out of the bottle. Classic for a reason." },
+        { id:"flight",   name:"Flight Serum",       emoji:"🕊️", unlockAt:9,  desc:"Fifteen glorious minutes of flying. Landing not included.",
+          steps:["phoenix","stardust","ghostmist","crystal"], brewedLine:"Up, up and away — graceful as a slightly startled goose!" },
+        { id:"truth",    name:"Truth Serum",        emoji:"🔮", unlockAt:12, desc:"The drinker can only speak the truth until sunrise.",
+          steps:["crystal","ghostmist","wolfsbane","moonpetal","stardust"], brewedLine:"Every secret spills out, one after another. Deliciously awkward." },
+        { id:"luck",     name:"Liquid Luck",        emoji:"🍀", unlockAt:16, desc:"One perfect, golden, everything-goes-right day.",
+          steps:["honey","stardust","mermaid","phoenix","crystal"], brewedLine:"The bottle practically hums with good fortune." },
+        { id:"nightvision", name:"Night Owl Tonic", emoji:"🦉", unlockAt:20, desc:"See in total darkness until dawn. Hooting optional.",
+          steps:["mushroom","wolfsbane","ghostmist","dragonscale","crystal","moonpetal"], brewedLine:"The dark turns silver-bright. Every shadow revealed." },
+        { id:"phoenixrevival", name:"Phoenix Revival", emoji:"🦚", unlockAt:25, desc:"Brings a wilting plant — or a wilting spirit — back to blazing life.",
+          steps:["phoenix","emberroot","dragonscale","stardust","honey","mermaid"], brewedLine:"From the ashes, a blaze of new life erupts!" },
+        { id:"eternity", name:"Elixir of Eternity", emoji:"♾️", unlockAt:31, desc:"The legendary brew. One sip adds a year of sparkle to a life.",
+          steps:["stardust","crystal","phoenix","mermaid","ghostmist","dragonscale","moonpetal"], brewedLine:"Time itself seems to hold its breath. Legendary." }
+      ];
+
+      var CUSTOMERS = [
+        { name:"Bramble the Dragon", emoji:"🐲", lines:["My wing is torn from a very heroic landing. I need a <b>{p}</b>, please.","A knight singed my tail. One <b>{p}</b>, and make it quick."] },
+        { name:"Sir Reginald, Knight", emoji:"🛡️", lines:["The tournament is tonight and I'm hopelessly smitten. Fetch me a <b>{p}</b>!","I've lost my courage in the enchanted forest. A <b>{p}</b> should fix it."] },
+        { name:"Madame Whisper, Ghost", emoji:"👻", lines:["Being dead is no excuse for a dull evening. I'd love a <b>{p}</b>.","I haunt the same hall every night. Surprise me with a <b>{p}</b>."] },
+        { name:"Pip the Fairy", emoji:"🧚", lines:["My wings are drooping and the Moon Ball is TONIGHT. A <b>{p}</b>, hurry!","Sprinkle me something lovely — a <b>{p}</b> would be perfect."] },
+        { name:"Old Marta, Witch", emoji:"🧹", lines:["Even witches run out of their own stock, dear. One <b>{p}</b>.","My cauldron's on holiday. Brew me a <b>{p}</b>, there's a love."] },
+        { name:"Captain Coral", emoji:"🧜‍♀️", lines:["The tide ball approaches and my scales look dull. A <b>{p}</b>!","A sailor's promise must be kept. I require a <b>{p}</b>."] },
+        { name:"Professor Hoot", emoji:"🦉", lines:["Night lectures all week and these old eyes are tired. A <b>{p}</b>, if you please.","Wisdom is heavy work. One <b>{p}</b> to keep me sharp."] },
+        { name:"Grum the Troll", emoji:"🧌", lines:["Grum feel funny in tummy. Grum want <b>{p}</b>.","Bridge toll was mean words today. <b>{p}</b> make Grum happy."] },
+        { name:"Lady Velvet, Vampire", emoji:"🧛‍♀️", lines:["Three hundred years and still afraid of the dark ballroom. A <b>{p}</b>, darling.","Eternity is long, darling. A <b>{p}</b> keeps it interesting."] },
+        { name:"Felix the Cat", emoji:"🐱", lines:["I knocked a vase off a wizard's shelf. I need a <b>{p}</b> before he notices.","Nine lives, zero patience. One <b>{p}</b>, please."] }
+      ];
+
+      var MISHAPS = [
+        "It fizzes, pops… and turns bright purple. The customer is now, briefly, a very confused frog.",
+        "A puff of glitter explodes everywhere. It'll be in everyone's hair for weeks.",
+        "The potion smells wonderful — and makes the drinker hiccup bubbles for an hour.",
+        "It glows, wobbles, then politely evaporates. The cauldron looks smug about it.",
+        "One sip and the customer's voice becomes a kazoo. Delightful, but not what they ordered.",
+        "The brew sprouts tiny legs and scampers under the counter. You'll never catch it."
+      ];
+
+      var RANKS = [
+        { min:0, name:"Apprentice Stirrer" }, { min:150, name:"Potion Pupil" },
+        { min:400, name:"Cauldron Keeper" }, { min:800, name:"Brewmaster" },
+        { min:1400, name:"Grand Alchemist" }, { min:2200, name:"Legendary Witch" }
+      ];
+
+      // Stages: the memory ramp. Each stage lengthens every order by one
+      // ingredient (3 → 10) and widens the pool the extra steps are drawn
+      // from. Extras are stirred into the base recipe at random spots and
+      // may repeat ingredients already in it — that's the hard part.
+      // unlockAt = successful serves needed to reach the stage.
+      var STAGES = [
+        { n:1, name:"First Sips",       steps:3,  pool:6,  unlockAt:0 },
+        { n:2, name:"Steady Stirrer",   steps:4,  pool:7,  unlockAt:3 },
+        { n:3, name:"Keen Nose",        steps:5,  pool:8,  unlockAt:6 },
+        { n:4, name:"Sharp Memory",     steps:6,  pool:9,  unlockAt:10 },
+        { n:5, name:"Cauldron Mind",    steps:7,  pool:10, unlockAt:14 },
+        { n:6, name:"Potion Sage",      steps:8,  pool:11, unlockAt:19 },
+        { n:7, name:"Master of Memory", steps:9,  pool:12, unlockAt:24 },
+        { n:8, name:"Legendary Recall", steps:10, pool:12, unlockAt:30 }
+      ];
+
+      // ---------------- State (this visit only) ----------------
+      var S = {
+        score:0, served:0, attempts:0, streak:0, bestStreak:0,
+        recipe:null, customer:null, added:[], phase:"start",
+        timerId:null, timeLeft:10, brewedCounts:{}, bookReturn:"start",
+        prevUnlocked:3,
+        brewTimerId:null, brewTimeLeft:45, brewTimedOut:false, stage:null, memorizeTotal:10
+      };
+      // Memorize window: 10s for Stages 1–2, +1s per stage after that, so the
+      // 10-ingredient Stage 8 orders get 16s to study — still a scramble.
+      function memorizeSeconds(){ var st = currentStage(); return 10 + Math.max(0, st.n - 2); }
+      // Customer patience in the potion room: 25s + 5s per ingredient in the
+      // order, so a 3-step Stage 1 brew gets 40s and a 10-step Stage 8 brew 75s.
+      function brewSeconds(){ return 25 + (S.recipe ? S.recipe.steps.length : 3) * 5; }
+
+      function $(id){ return document.getElementById(id); }
+      // Chibi portrait art for customers who have one; everyone else uses their emoji.
+      function custPortrait(c){ return c && c.name.indexOf("Dragon") !== -1 ? "assets/chibi-dragon.webp" : null; }
+      function setFace(el, c){
+        if (!el) return;
+        var p = custPortrait(c);
+        if (p){ el.innerHTML = '<img src="' + p + '" alt="" />'; }
+        else { el.textContent = c ? c.emoji : "🦉"; }
+      }
+      function unlockedRecipes(){ return RECIPES.filter(function(r){ return S.served >= r.unlockAt; }); }
+      function currentStage(){
+        var st = STAGES[0];
+        for (var i=0;i<STAGES.length;i++) if (S.served >= STAGES[i].unlockAt) st = STAGES[i];
+        return st;
+      }
+      function nextStage(){
+        var st = currentStage();
+        for (var i=0;i<STAGES.length;i++) if (STAGES[i].n === st.n + 1) return STAGES[i];
+        return null;
+      }
+      // Build this round's steps: the potion's base recipe, lengthened to the
+      // current stage's step count with extra ingredients stirred in at
+      // random positions. The first extra is always a repeat of an ingredient
+      // already in the recipe, so repeats reliably appear from Stage 3 up.
+      function makeStageSteps(base, stage){
+        var steps = base.steps.slice();
+        if (steps.length >= stage.steps) return steps.slice(0, stage.steps);
+        var poolIds = [];
+        for (var i=0;i<Math.min(stage.pool, INGREDIENTS.length);i++) poolIds.push(INGREDIENTS[i].id);
+        var firstExtra = true;
+        while (steps.length < stage.steps){
+          var pick;
+          if (firstExtra){ pick = steps[Math.floor(Math.random()*steps.length)]; firstExtra = false; }
+          else { pick = poolIds[Math.floor(Math.random()*poolIds.length)]; }
+          var pos = Math.floor(Math.random()*(steps.length + 1));
+          steps.splice(pos, 0, pick);
+        }
+        return steps;
+      }
+      function nextLocked(){ for (var i=0;i<RECIPES.length;i++) if (S.served < RECIPES[i].unlockAt) return RECIPES[i]; return null; }
+      function rankName(){ var n=RANKS[0].name; for (var i=0;i<RANKS.length;i++) if (S.score>=RANKS[i].min) n=RANKS[i].name; return n; }
+
+      function toast(msg){
+        var t=$("toast"); t.textContent=msg; t.classList.add("show");
+        setTimeout(function(){ t.classList.remove("show"); }, 2600);
+      }
+
+      // ---------------- Stats / progress ----------------
+      function renderStats(){
+        $("statScore").textContent = S.score;
+        $("statServed").textContent = S.served;
+        $("statStreak").innerHTML = S.streak + (S.bestStreak>1 ? ' <small>best '+S.bestStreak+'</small>' : '');
+        $("statRank").textContent = rankName();
+        var stNow = currentStage(), stNext = nextStage();
+        $("stageText").innerHTML = "Stage " + stNow.n + " · <b>" + stNow.name + "</b> — memorize " + stNow.steps + " ingredients" +
+          (stNext ? "" : " · the final stage!");
+        $("stageCount").textContent = stNext
+          ? ("Stage " + stNow.n + " of " + STAGES.length + " · Stage " + stNext.n + " in " + (stNext.unlockAt - S.served) + " more serve" + ((stNext.unlockAt - S.served)===1?"":"s"))
+          : ("Stage " + STAGES.length + " of " + STAGES.length + " · maxed out");
+        var un = unlockedRecipes().length;
+        $("unlockCount").textContent = un + " / " + RECIPES.length + " recipes";
+        var nl = nextLocked();
+        if (nl){
+          var prevThreshold = 0;
+          for (var i=0;i<RECIPES.length;i++) if (RECIPES[i].unlockAt <= S.served && RECIPES[i].unlockAt > prevThreshold) prevThreshold = RECIPES[i].unlockAt;
+          var span = nl.unlockAt - prevThreshold, done = S.served - prevThreshold;
+          $("progressFill").style.width = Math.round(done/span*100) + "%";
+          var left = nl.unlockAt - S.served;
+          $("nextUnlockText").innerHTML = "Next unlock: <b>" + nl.emoji + " " + nl.name + "</b> — serve " + left + " more customer" + (left===1?"":"s");
+        } else {
+          $("progressFill").style.width = "100%";
+          $("nextUnlockText").innerHTML = '<span class="all-done">✦ Every recipe in the book is yours. Legendary!</span>';
+        }
+      }
+
+      // ---------------- Screens ----------------
+      function show(id){
+        ["screenStart","screenGame","screenResult","screenBook"].forEach(function(s){ $(s).classList.add("hidden"); });
+        $(id).classList.remove("hidden");
+        // The 3D storefront is the full-page background on the front page; the
+        // game screen manages it per-phase (on at the storefront, off in the potion room).
+        if (id === "screenStart") document.body.classList.add("front-bg");
+        else if (id !== "screenGame") document.body.classList.remove("front-bg");
+        if (id !== "screenGame") document.body.classList.remove("brew-mode");
+        window.scrollTo({ top:0, behavior:"smooth" });
+      }
+
+      // ---------------- Round flow ----------------
+      function newCustomer(){
+        stopTimer(); stopBrewTimer();
+        var stage = currentStage();
+        // Only offer potions whose base recipe fits this stage's length;
+        // the starting 3-step potions always qualify, so this never empties.
+        var pool = unlockedRecipes().filter(function(r){ return r.steps.length <= stage.steps; });
+        if (!pool.length) pool = unlockedRecipes();
+        var base = pool[Math.floor(Math.random()*pool.length)];
+        S.recipe = { id:base.id, name:base.name, emoji:base.emoji, desc:base.desc, brewedLine:base.brewedLine, steps:makeStageSteps(base, stage) };
+        S.stage = stage;
+        var ot = $("orderStageTag");
+        if (ot) ot.textContent = "Stage " + stage.n + " · " + stage.name + " — memorize " + S.recipe.steps.length + " ingredients";
+        S.customer = CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+        S.added = [];
+        var line = S.customer.lines[Math.floor(Math.random()*S.customer.lines.length)];
+        setFace($("custAvatar"), S.customer);
+        setFace($("stageFace"), S.customer);
+        $("stageName").textContent = S.customer.name.split(",")[0];
+        setFace($("stageFaceRoom"), S.customer);
+        $("stageNameRoom").textContent = S.customer.name.split(",")[0] + " waits outside";
+        if (window.setSceneCustomer) window.setSceneCustomer(S.customer.name);
+        $("screenGame").classList.remove("room-mode");
+        $("custName").innerHTML = S.customer.name + " <span>wants…</span>";
+        $("custLine").innerHTML = line.replace("{p}", S.recipe.name);
+        $("recipeName").textContent = S.recipe.emoji + " " + S.recipe.name;
+        $("recipeDesc").textContent = S.recipe.desc;
+        var ol = $("recipeSteps"); ol.innerHTML = "";
+        S.recipe.steps.forEach(function(id, i){
+          var g = ing(id);
+          var li = document.createElement("li");
+          li.innerHTML = '<span class="num">'+(i+1)+'</span><span class="ing-emoji">'+g.emoji+'</span><span>'+g.name+'</span><span class="ing-dot" style="background:'+g.color+'"></span>';
+          ol.appendChild(li);
+        });
+        $("phaseMemorize").classList.remove("hidden");
+        $("phaseBrew").classList.add("hidden");
+        document.body.classList.remove("brew-mode");
+        document.body.classList.add("front-bg");
+        show("screenGame");
+        S.phase = "memorize";
+        startTimer();
+      }
+
+      function startTimer(){
+        S.memorizeTotal = memorizeSeconds();
+        S.timeLeft = S.memorizeTotal;
+        $("timerFill").style.width = "100%";
+        $("timerSecs").textContent = S.memorizeTotal.toFixed(1);
+        $("timerBar").classList.remove("low");
+        var last = Date.now();
+        S.timerId = setInterval(function(){
+          var now = Date.now();
+          S.timeLeft -= (now-last)/1000; last = now;
+          if (S.timeLeft <= 0){ S.timeLeft = 0; updateTimerUI(); stopTimer(); beginBrew(); return; }
+          updateTimerUI();
+        }, 100);
+      }
+      function updateTimerUI(){
+        $("timerSecs").textContent = S.timeLeft.toFixed(1);
+        $("timerFill").style.width = (S.timeLeft/(S.memorizeTotal || 10)*100) + "%";
+        if (S.timeLeft <= 3) $("timerBar").classList.add("low");
+      }
+      function stopTimer(){ if (S.timerId){ clearInterval(S.timerId); S.timerId = null; } }
+
+      // Potion-room patience timer: counts down while brewing; at zero the pot
+      // is served as-is (brew() scores whatever is in it, finished or not).
+      function startBrewTimer(){
+        stopBrewTimer();
+        S.brewTimeLeft = brewSeconds();
+        S.brewTimedOut = false;
+        updateBrewTimerUI();
+        var last = Date.now();
+        S.brewTimerId = setInterval(function(){
+          var now = Date.now();
+          S.brewTimeLeft -= (now-last)/1000; last = now;
+          if (S.brewTimeLeft <= 0){
+            S.brewTimeLeft = 0; updateBrewTimerUI(); stopBrewTimer();
+            if (S.phase === "brew"){ S.brewTimedOut = true; brew(); }
+            return;
+          }
+          updateBrewTimerUI();
+        }, 100);
+      }
+      function updateBrewTimerUI(){
+        var secsEl = $("brewTimerSecs"), pill = $("brewTimerPill");
+        if (secsEl) secsEl.textContent = Math.ceil(S.brewTimeLeft);
+        if (pill) pill.classList.toggle("low", S.brewTimeLeft <= 10);
+      }
+      function stopBrewTimer(){ if (S.brewTimerId){ clearInterval(S.brewTimerId); S.brewTimerId = null; } }
+
+      function beginBrew(){
+        if (S.phase !== "memorize") return;
+        S.phase = "brew";
+        document.body.classList.remove("front-bg");
+        document.body.classList.add("brew-mode");
+        $("phaseMemorize").classList.add("hidden");
+        $("phaseBrew").classList.remove("hidden");
+        $("screenGame").classList.add("room-mode");
+        $("brewScore").textContent = S.score;
+        $("brewTarget").textContent = "Brewing: " + S.recipe.name;
+        renderShelf(); renderSlots();
+        startBrewTimer();
+      }
+
+      // Floating-ingredient spots in the air around the witch (% of the stage).
+      // Bubbles are now ~21% of the stage wide on a phone (76px) and ~17% on
+      // desktop (90px), so every spot keeps its bigger bubble fully inside
+      // the stage (right column x + width <= ~97%) and the top row sits
+      // below the HUD pills and the "waits outside" pill.
+      var FLOAT_POS = [
+        { x:2,  y:15 }, { x:20, y:22 }, { x:38, y:18 }, { x:56, y:22 }, { x:73, y:15 },
+        { x:1,  y:38 }, { x:76, y:38 },
+        { x:1,  y:56 }, { x:76, y:56 },
+        { x:4,  y:72 }, { x:74, y:72 },
+        { x:41, y:75 }
+      ];
+      function renderShelf(){
+        var layer = $("floatLayer"); if (!layer) return;
+        layer.innerHTML = "";
+        INGREDIENTS.forEach(function(g, i){
+          var pos = FLOAT_POS[i % FLOAT_POS.length];
+          var b = document.createElement("button");
+          b.className = "float-ing"; b.type = "button";
+          b.style.left = pos.x + "%"; b.style.top = pos.y + "%";
+          b.style.setProperty("--fc", g.color);
+          b.style.animationDelay = (i * 0.37) + "s";
+          b.dataset.homeLeft = pos.x; b.dataset.homeTop = pos.y; b.dataset.ing = g.id;
+          b.innerHTML = '<span class="e">'+g.emoji+'</span><span class="n">'+g.name+'</span>';
+          b.setAttribute("aria-label", "Add " + g.name + " — drag into the cauldron or tap");
+          b.addEventListener("click", function(){
+            if (Date.now() - (window.__dragSuppressUntil || 0) < 350) return;
+            var before = S.added.length;
+            addIngredient(g.id);
+            if (S.added.length > before) splashAt(b, g);
+          });
+          makeDraggable(b, g);
+          layer.appendChild(b);
+        });
+      }
+      function splashAt(anchorEl, g){
+        var stage = $("brewStage"), drop = $("cauldronDrop");
+        if (!stage || !drop) return;
+        drop.classList.remove("pulse"); void drop.offsetWidth; drop.classList.add("pulse");
+        var sr = stage.getBoundingClientRect();
+        for (var i = 0; i < 3; i++){
+          var s = document.createElement("span");
+          s.className = "splash-bit"; s.textContent = i === 1 ? g.emoji : "✦";
+          s.style.left = (46 + Math.random() * 10) + "%"; s.style.top = "64%";
+          s.style.animationDelay = (i * 0.09) + "s";
+          stage.appendChild(s);
+          (function(el){ setTimeout(function(){ el.remove(); }, 950); })(s);
+        }
+      }
+      function makeDraggable(el, g){
+        var drag = null;
+        el.addEventListener("pointerdown", function(ev){
+          drag = { x: ev.clientX, y: ev.clientY, moved: false, pid: ev.pointerId };
+          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+        });
+        el.addEventListener("pointermove", function(ev){
+          if (!drag || ev.pointerId !== drag.pid) return;
+          var dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+          if (!drag.moved && Math.hypot(dx, dy) < 7) return;
+          if (!drag.moved){
+            drag.moved = true;
+            el.classList.add("dragging");
+            var stage = $("brewStage"), r = stage.getBoundingClientRect(), er = el.getBoundingClientRect();
+            drag.offX = er.left - r.left + er.width / 2; drag.offY = er.top - r.top + er.height / 2;
+            drag.stage = r;
+          }
+          var nl = ((ev.clientX - drag.stage.left - drag.offX + el.offsetWidth / 2) / drag.stage.width) * 100;
+          var nt = ((ev.clientY - drag.stage.top - drag.offY + el.offsetHeight / 2) / drag.stage.height) * 100;
+          el.style.left = Math.max(-4, Math.min(94, (ev.clientX - drag.stage.left - el.offsetWidth / 2) / drag.stage.width * 100)) + "%";
+          el.style.top = Math.max(-2, Math.min(92, (ev.clientY - drag.stage.top - el.offsetHeight / 2) / drag.stage.height * 100)) + "%";
+          var drop = $("cauldronDrop");
+          if (drop){
+            var dr = drop.getBoundingClientRect();
+            var over = ev.clientX >= dr.left - 14 && ev.clientX <= dr.right + 14 && ev.clientY >= dr.top - 14 && ev.clientY <= dr.bottom + 20;
+            drop.classList.toggle("over", over); drag.over = over;
+          }
+        });
+        function endDrag(ev){
+          if (!drag) return;
+          var wasDrag = drag.moved, over = drag.over;
+          drag = null;
+          var drop = $("cauldronDrop"); if (drop) drop.classList.remove("over");
+          el.classList.remove("dragging");
+          if (wasDrag){
+            window.__dragSuppressUntil = Date.now();
+            el.classList.add("returning");
+            el.style.left = el.dataset.homeLeft + "%"; el.style.top = el.dataset.homeTop + "%";
+            setTimeout(function(){ el.classList.remove("returning"); }, 380);
+            if (over){
+              if (S.added.length >= S.recipe.steps.length){ toast("The cauldron is full — brew it, or undo an ingredient."); }
+              else { addIngredient(g.id); splashAt(el, g); }
+            }
+          }
+        }
+        el.addEventListener("pointerup", endDrag);
+        el.addEventListener("pointercancel", endDrag);
+      }
+
+      function addIngredient(id){
+        if (S.added.length >= S.recipe.steps.length){
+          toast("The cauldron is full — brew it, or undo an ingredient.");
+          return;
+        }
+        S.added.push(id);
+        renderSlots();
+      }
+      function renderSlots(){
+        var box = $("slots"); box.innerHTML = "";
+        for (var i=0;i<S.recipe.steps.length;i++){
+          var d = document.createElement("div");
+          if (S.added[i]){
+            var g = ing(S.added[i]);
+            d.className = "slot filled"; d.textContent = g.emoji; d.title = g.name;
+          } else {
+            d.className = "slot"; d.innerHTML = '<span class="q">'+(i+1)+'</span>';
+          }
+          box.appendChild(d);
+        }
+        // The cauldron's glow takes on the last added ingredient's colour
+        var glowCol = "#7a9a4d", lastG = null;
+        if (S.added.length){ lastG = ing(S.added[S.added.length-1]); glowCol = lastG.color; }
+        var dropEl = $("cauldronDrop");
+        if (dropEl) dropEl.style.setProperty("--brew-glow", glowCol + "88");
+        var hintEl = $("dropHint");
+        if (hintEl) hintEl.style.opacity = S.added.length ? "0" : "1";
+        var left = S.recipe.steps.length - S.added.length;
+        $("brewStatus").innerHTML = S.added.length === 0
+          ? "Nothing in the pot yet — drag an ingredient in."
+          : ('<span class="brew-color" style="background:' + glowCol + '"></span>' + (left === 0 ? "Cauldron full — ready to brew!" : S.added.length + " in the pot · " + left + " more to add"));
+        $("btnBrew").disabled = left !== 0;
+        $("btnUndo").disabled = S.added.length === 0;
+        $("btnClear").disabled = S.added.length === 0;
+      }
+
+      function brew(){
+        stopBrewTimer();
+        S.attempts++;
+        var correct = S.recipe.steps, mine = S.added;
+        var exact = correct.length === mine.length && correct.every(function(v,i){ return v === mine[i]; });
+        var posRight = 0;
+        for (var i=0;i<correct.length;i++) if (mine[i] === correct[i]) posRight++;
+
+        setFace($("resAvatar"), S.customer);
+        document.body.classList.remove("brew-mode");
+        $("screenGame").classList.remove("room-mode");
+        $("resName").textContent = S.customer.name;
+        $("unlockBanner").classList.add("hidden");
+        $("stageBanner").classList.add("hidden");
+
+        if (exact){
+          var stageBefore = currentStage().n;
+          S.served++;
+          S.streak++;
+          if (S.streak > S.bestStreak) S.bestStreak = S.streak;
+          S.brewedCounts[S.recipe.id] = (S.brewedCounts[S.recipe.id]||0) + 1;
+          var pts = 100 + (correct.length - 3) * 15 + Math.min(S.streak - 1, 5) * 10;
+          S.score += pts;
+          $("resEmoji").textContent = "✨";
+          $("resTitle").textContent = S.streak >= 3 ? "Perfect Brew! " + S.streak + " in a row 🔥" : "Perfect Brew!";
+          $("resText").textContent = S.recipe.brewedLine;
+          $("resLine").innerHTML = "\"That's exactly it! You're a marvel, witch.\"";
+          var chip = $("resPoints"); chip.className = "points-chip"; chip.textContent = "+" + pts + " Brew Points";
+          $("revealCorrectWrap").classList.add("hidden");
+          // Unlock check
+          var nowUnlocked = unlockedRecipes();
+          if (nowUnlocked.length > S.prevUnlocked){
+            var newest = nowUnlocked[nowUnlocked.length - 1];
+            $("unlockName").textContent = newest.emoji + " " + newest.name;
+            $("unlockDesc").textContent = newest.desc + " It's now in your recipe book — and customers can order it.";
+            $("unlockBanner").classList.remove("hidden");
+          }
+          S.prevUnlocked = nowUnlocked.length;
+          // Stage-up check: orders get one ingredient longer (repeats included)
+          var stageAfter = currentStage();
+          if (stageAfter.n > stageBefore){
+            $("stageUpName").textContent = "Stage " + stageAfter.n + " · " + stageAfter.name;
+            $("stageUpDesc").textContent = "Orders now run to " + stageAfter.steps + " ingredients — with repeats stirred in. One more thing to hold in your head, witch!";
+            $("stageBanner").classList.remove("hidden");
+          }
+        } else {
+          S.streak = 0;
+          var consolation = posRight >= correct.length - 1 ? 25 : 10;
+          S.score += consolation;
+          $("resEmoji").textContent = "💥";
+          $("resTitle").textContent = posRight >= correct.length - 1 ? "So Close!" : "Oh No — A Mishap!";
+          $("resText").textContent = MISHAPS[Math.floor(Math.random()*MISHAPS.length)] + (posRight >= correct.length - 1 ? " You had " + posRight + " of " + correct.length + " steps in exactly the right place." : " Only " + posRight + " of " + correct.length + " steps landed in the right place.");
+          $("resLine").innerHTML = "\"Hmm… that wasn't quite my <b>" + S.recipe.name + "</b>, was it?\"";
+          if (S.brewTimedOut){
+            $("resEmoji").textContent = "⏰";
+            $("resTitle").textContent = "Out of Time!";
+            $("resText").textContent = "The customer's patience ran out, so whatever was bubbling in the pot got served as-is. " + $("resText").textContent;
+            $("resLine").innerHTML = "\"I waited and waited… whatever that was, it wasn't my <b>" + S.recipe.name + "</b>!\"";
+          }
+          var chip2 = $("resPoints"); chip2.className = "points-chip bad"; chip2.textContent = "+" + consolation + " points for trying";
+          $("revealCorrectWrap").classList.remove("hidden");
+          var rc = $("revealCorrect"); rc.innerHTML = "";
+          correct.forEach(function(id, idx){
+            var g = ing(id);
+            var s = document.createElement("span"); s.className = "mini";
+            s.innerHTML = '<span class="pos">'+(idx+1)+'</span>' + g.emoji + " " + g.name;
+            rc.appendChild(s);
+          });
+        }
+
+        var ry = $("revealYours"); ry.innerHTML = "";
+        mine.forEach(function(id, idx){
+          var g = ing(id);
+          var s = document.createElement("span");
+          s.className = "mini " + (exact || id === correct[idx] ? "ok" : "wrong");
+          s.innerHTML = '<span class="pos">'+(idx+1)+'</span>' + g.emoji + " " + g.name;
+          ry.appendChild(s);
+        });
+
+        renderStats();
+        S.phase = "result";
+        show("screenResult");
+      }
+
+      // ---------------- Recipe book ----------------
+      function renderBook(){
+        var un = unlockedRecipes().length;
+        $("bookCount").textContent = un + " of " + RECIPES.length + " unlocked";
+        var grid = $("bookGrid"); grid.innerHTML = "";
+        RECIPES.forEach(function(r){
+          var isUn = S.served >= r.unlockAt;
+          var card = document.createElement("div");
+          card.className = "book-card" + (isUn ? "" : " locked");
+          if (isUn){
+            var stepsHtml = r.steps.map(function(id, i){ var g = ing(id); return "<span>" + (i+1) + ". " + g.emoji + " " + g.name + "</span>"; }).join("");
+            var times = S.brewedCounts[r.id] || 0;
+            card.innerHTML =
+              '<div class="bc-head"><h3>' + r.name + '</h3><span class="lvl-pill">' + r.steps.length + ' steps</span></div>' +
+              '<div class="bc-emoji">' + r.emoji + '</div>' +
+              '<p>' + r.desc + '</p>' +
+              '<div class="bc-steps">' + stepsHtml + '</div>' +
+              '<div class="bc-meta">' + (times ? "Brewed perfectly × " + times : "Unlocked — not brewed yet") + '</div>';
+          } else {
+            var left = r.unlockAt - S.served;
+            card.innerHTML =
+              '<div class="bc-head"><h3>??? Potion</h3><span class="lvl-pill lock">Locked</span></div>' +
+              '<div class="bc-emoji">🔒</div>' +
+              '<p>A mysterious recipe, still sealed in the back of the book…</p>' +
+              '<div class="bc-lock">🔓 Unlocks after ' + left + ' more successful serve' + (left===1?"":"s") + ' (' + r.steps.length + ' steps)</div>';
+          }
+          grid.appendChild(card);
+        });
+      }
+      function openBook(from){
+        S.bookReturn = from;
+        renderBook();
+        show("screenBook");
+      }
+
+      // ---------------- Wiring ----------------
+      $("btnStart").addEventListener("click", newCustomer);
+      $("btnSkip").addEventListener("click", function(){ stopTimer(); beginBrew(); });
+      $("btnUndo").addEventListener("click", function(){ S.added.pop(); renderSlots(); });
+      $("btnClear").addEventListener("click", function(){ S.added = []; renderSlots(); });
+      $("btnBrew").addEventListener("click", brew);
+      $("btnNext").addEventListener("click", newCustomer);
+      $("btnBookStart").addEventListener("click", function(){ openBook("start"); });
+      $("btnBookResult").addEventListener("click", function(){ openBook("result"); });
+      $("btnBookBack").addEventListener("click", function(){
+        if (S.bookReturn === "result" && S.phase === "result") show("screenResult");
+        else if (S.bookReturn === "start") show("screenStart");
+        else show("screenStart");
+      });
+
+      S.prevUnlocked = unlockedRecipes().length;
+      renderStats();
+    </script>
+
+    <script src="assets/three.min.js"></script>
+    <script>
+    // ================= 3D diorama scenes (storefront + potion room) =================
+    (function(){
+      var errBox = document.getElementById("glError");
+      function showErr(msg){ if (errBox){ errBox.textContent = msg; errBox.style.display = "block"; } }
+      window.addEventListener("error", function(e){ if (window.__glLive) showErr("The 3D shop hit a snag: " + (e.message || "unknown error")); });
+      if (!window.THREE) return; // flat illustration fallback stays visible
+      var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // ---------- helpers ----------
+      function M(color, rough, opts){
+        var o = { color: color, roughness: rough == null ? 0.85 : rough, metalness: 0 };
+        if (opts) for (var k in opts) o[k] = opts[k];
+        return new THREE.MeshStandardMaterial(o);
+      }
+      function EM(color, intensity){ return new THREE.MeshStandardMaterial({ color: 0x1c1420, emissive: color, emissiveIntensity: intensity == null ? 1 : intensity, roughness: 0.5 }); }
+      function put(parent, geo, mat, x, y, z, shadow){
+        var o = new THREE.Mesh(geo, mat);
+        o.position.set(x || 0, y || 0, z || 0);
+        if (shadow !== false){ o.castShadow = true; o.receiveShadow = true; }
+        parent.add(o); return o;
+      }
+      function canvasTex(w, h, draw){
+        var c = document.createElement("canvas"); c.width = w; c.height = h;
+        draw(c.getContext("2d"), w, h);
+        var t = new THREE.CanvasTexture(c);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      }
+      var glowTex = canvasTex(64, 64, function(g){
+        var r = g.createRadialGradient(32, 32, 2, 32, 32, 30);
+        r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.4, "rgba(255,255,255,.45)"); r.addColorStop(1, "rgba(255,255,255,0)");
+        g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+      });
+      function sprite(parent, color, scale, x, y, z, opacity){
+        var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: color, transparent: true, opacity: opacity == null ? 0.8 : opacity, depthWrite: false, blending: THREE.AdditiveBlending }));
+        s.scale.set(scale, scale, 1); s.position.set(x, y, z); parent.add(s); return s;
+      }
+      var awningTex = canvasTex(256, 64, function(g, w, h){
+        for (var i = 0; i < 8; i++){ g.fillStyle = i % 2 ? "#f3e3c2" : "#5b2a4a"; g.fillRect(i * w / 8, 0, w / 8, h); }
+        g.fillStyle = "rgba(0,0,0,.12)"; g.fillRect(0, h - 8, w, 8);
+      });
+      awningTex.wrapS = THREE.RepeatWrapping; awningTex.repeat.x = 2;
+      var signTex = canvasTex(512, 256, function(g, w, h){
+        g.fillStyle = "#3d1b31"; g.fillRect(0, 0, w, h);
+        g.strokeStyle = "#d99a26"; g.lineWidth = 10; g.strokeRect(14, 14, w - 28, h - 28);
+        g.fillStyle = "#ffe9b8"; g.textAlign = "center";
+        g.font = "52px Georgia, serif"; g.fillText("The Wandering", w / 2, 96);
+        g.fillText("Cauldron", w / 2, 158);
+        g.fillStyle = "#d99a26"; g.font = "34px Georgia, serif"; g.fillText("✦ POTIONS ✦", w / 2, 214);
+      });
+      var moonWinTex = canvasTex(256, 320, function(g, w, h){
+        var grad = g.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, "#141c3d"); grad.addColorStop(0.7, "#27335f"); grad.addColorStop(1, "#3a3a5e");
+        g.fillStyle = grad; g.fillRect(0, 0, w, h);
+        g.fillStyle = "#f5eeda";
+        for (var i = 0; i < 46; i++){ g.globalAlpha = 0.35 + Math.random() * 0.6; g.fillRect(Math.random() * w, Math.random() * h * 0.75, 2.4, 2.4); }
+        g.globalAlpha = 1; g.beginPath(); g.arc(178, 74, 30, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#27335f"; g.beginPath(); g.arc(194, 62, 26, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#10182e";
+        g.beginPath(); g.moveTo(0, h); g.lineTo(0, 268); g.lineTo(52, 226); g.lineTo(96, 262); g.lineTo(150, 218); g.lineTo(206, 258); g.lineTo(256, 232); g.lineTo(256, h); g.closePath(); g.fill();
+        g.strokeStyle = "#5a4028"; g.lineWidth = 14; g.strokeRect(0, 0, w, h);
+        g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.moveTo(0, h / 2); g.lineTo(w, h / 2); g.stroke();
+      });
+
+      // ---------- chibi character builders ----------
+      function bottle(parent, x, y, z, color){
+        var g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
+        put(g, new THREE.SphereGeometry(0.11, 14, 12), EM(color, 1.1), 0, 0, 0);
+        put(g, new THREE.CylinderGeometry(0.04, 0.05, 0.12, 10), M(0xd8cfc0, 0.4), 0, 0.13, 0);
+        put(g, new THREE.CylinderGeometry(0.045, 0.045, 0.05, 10), M(0xa97c50, 0.8), 0, 0.2, 0);
+        sprite(g, color, 0.5, 0, 0, 0, 0.5);
+        return g;
+      }
+      function eyes(parent, y, z, spread){
+        put(parent, new THREE.SphereGeometry(0.045, 8, 8), M(0x241a16, 0.35), -spread, y, z, false);
+        put(parent, new THREE.SphereGeometry(0.045, 8, 8), M(0x241a16, 0.35), spread, y, z, false);
+        put(parent, new THREE.SphereGeometry(0.055, 8, 8), M(0xf2a0a0, 0.7), -spread - 0.09, y - 0.1, z - 0.02, false);
+        put(parent, new THREE.SphereGeometry(0.055, 8, 8), M(0xf2a0a0, 0.7), spread + 0.09, y - 0.1, z - 0.02, false);
+      }
+      function witchHat(parent, color, starColor){
+        put(parent, new THREE.CylinderGeometry(0.55, 0.58, 0.07, 24), M(color, 0.75), 0, 1.6, 0);
+        var cone = put(parent, new THREE.ConeGeometry(0.45, 1.0, 24), M(color, 0.75), 0.03, 2.08, 0);
+        cone.rotation.z = 0.07;
+        put(parent, new THREE.OctahedronGeometry(0.085), EM(starColor || 0xf2c14e, 0.9), -0.1, 1.92, 0.4, false);
+      }
+      function makeWitch(robeColor, hairColor){
+        var g = new THREE.Group();
+        put(g, new THREE.CylinderGeometry(0.33, 0.64, 1.06, 20), M(robeColor || 0x5b2a4a, 0.8), 0, 0.53, 0);
+        var apron = put(g, new THREE.BoxGeometry(0.52, 0.62, 0.05), M(0xf6ecd7, 0.9), 0, 0.56, 0.45); apron.rotation.x = -0.1;
+        put(g, new THREE.SphereGeometry(0.37, 20, 16), M(hairColor || 0x4a2f22, 0.9), 0, 1.4, -0.07);
+        put(g, new THREE.SphereGeometry(0.34, 20, 16), M(0xf7d3ac, 0.6), 0, 1.33, 0.02);
+        put(g, new THREE.SphereGeometry(0.13, 10, 10), M(hairColor || 0x4a2f22, 0.9), -0.31, 1.14, 0.05);
+        put(g, new THREE.SphereGeometry(0.13, 10, 10), M(hairColor || 0x4a2f22, 0.9), 0.31, 1.14, 0.05);
+        eyes(g, 1.36, 0.34, 0.12);
+        witchHat(g, 0x5b2a4a);
+        var armL = put(g, new THREE.CylinderGeometry(0.07, 0.09, 0.52, 10), M(robeColor || 0x5b2a4a, 0.8), -0.42, 0.98, 0.06); armL.rotation.z = 0.55;
+        var armR = put(g, new THREE.CylinderGeometry(0.07, 0.09, 0.52, 10), M(robeColor || 0x5b2a4a, 0.8), 0.44, 1.02, 0.14); armR.rotation.z = -0.95; armR.rotation.x = -0.35;
+        bottle(g, 0.58, 1.22, 0.3, 0xa35ce8);
+        put(g, new THREE.SphereGeometry(0.11, 10, 8), M(0x3d1b31, 0.7), -0.17, 0.05, 0.2);
+        put(g, new THREE.SphereGeometry(0.11, 10, 8), M(0x3d1b31, 0.7), 0.17, 0.05, 0.2);
+        return g;
+      }
+      function makeCustomer(name){
+        var g = new THREE.Group();
+        var skin = 0xf7d3ac;
+        function head(color, r, y){ return put(g, new THREE.SphereGeometry(r || 0.34, 20, 16), M(color, 0.6), 0, y || 1.3, 0); }
+        function body(color, top, bot, h){ return put(g, new THREE.CylinderGeometry(top || 0.3, bot || 0.55, h || 0.95, 18), M(color, 0.85), 0, (h || 0.95) / 2, 0); }
+        if (name.indexOf("Dragon") !== -1){
+          body(0x69a84f, 0.32, 0.52, 0.9);
+          put(g, new THREE.SphereGeometry(0.3, 14, 12), M(0xd9e6a3, 0.7), 0, 0.48, 0.3);
+          head(0x77b657, 0.37, 1.28);
+          put(g, new THREE.SphereGeometry(0.16, 12, 10), M(0x77b657, 0.6), 0, 1.18, 0.3);
+          eyes(g, 1.36, 0.35, 0.16);
+          var h1 = put(g, new THREE.ConeGeometry(0.09, 0.26, 10), M(0xf3e3c2, 0.6), -0.2, 1.66, 0); h1.rotation.z = 0.35;
+          var h2 = put(g, new THREE.ConeGeometry(0.09, 0.26, 10), M(0xf3e3c2, 0.6), 0.2, 1.66, 0); h2.rotation.z = -0.35;
+          [-1, 1].forEach(function(s){
+            var w = put(g, new THREE.BoxGeometry(0.5, 0.34, 0.03), M(0x5d9247, 0.7, { side: THREE.DoubleSide }), s * 0.48, 1.0, -0.18);
+            w.rotation.y = s * 0.5; w.rotation.z = s * 0.25;
+          });
+          var band = put(g, new THREE.BoxGeometry(0.2, 0.1, 0.045), M(0xe8b98a, 0.8), -0.52, 1.06, -0.14); band.rotation.y = -0.5; band.rotation.z = 0.3;
+          var tail = put(g, new THREE.CylinderGeometry(0.05, 0.1, 0.6, 10), M(0x69a84f, 0.8), -0.45, 0.22, -0.3); tail.rotation.z = 0.9; tail.rotation.x = 0.5;
+          bottle(g, 0.42, 0.72, 0.34, 0x9adbe8);
+          g.userData.kind = "dragon";
+        } else if (name.indexOf("Ghost") !== -1){
+          var gm = M(0xf4f1ea, 0.5, { transparent: true, opacity: 0.94 });
+          var bd = put(g, new THREE.CylinderGeometry(0.3, 0.52, 0.95, 18), gm, 0, 0.55, 0);
+          put(g, new THREE.SphereGeometry(0.36, 20, 16), gm, 0, 1.3, 0);
+          eyes(g, 1.36, 0.34, 0.15);
+          var b1 = put(g, new THREE.ConeGeometry(0.09, 0.16, 8), M(0xe59ac2, 0.6), -0.1, 1.68, 0); b1.rotation.z = 1.1;
+          var b2 = put(g, new THREE.ConeGeometry(0.09, 0.16, 8), M(0xe59ac2, 0.6), 0.1, 1.68, 0); b2.rotation.z = -1.1;
+          g.userData.kind = "ghost"; g.userData.float = true;
+        } else if (name.indexOf("Fairy") !== -1){
+          g.scale.setScalar(0.82);
+          body(0xe59ac2, 0.26, 0.55, 0.9);
+          put(g, new THREE.SphereGeometry(0.35, 18, 14), M(0xf2d38a, 0.8), 0, 1.38, -0.05);
+          head(skin, 0.32, 1.3);
+          eyes(g, 1.34, 0.31, 0.11);
+          [-1, 1].forEach(function(s){
+            var w = put(g, new THREE.PlaneGeometry(0.55, 0.4), new THREE.MeshStandardMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.55, side: THREE.DoubleSide, roughness: 0.3, depthWrite: false }), s * 0.36, 1.15, -0.22);
+            w.rotation.y = s * 0.6; w.rotation.z = s * 0.3;
+          });
+          var wand = put(g, new THREE.CylinderGeometry(0.02, 0.02, 0.55, 8), M(0xa97c50, 0.7), 0.48, 1.0, 0.2); wand.rotation.z = -0.5;
+          put(g, new THREE.OctahedronGeometry(0.08), EM(0xf2c14e, 1), 0.62, 1.26, 0.2, false);
+          sprite(g, 0xf2c14e, 0.45, 0.62, 1.26, 0.2, 0.5);
+          g.userData.kind = "fairy"; g.userData.float = true;
+        } else if (name.indexOf("Knight") !== -1){
+          body(0x8d97a3, 0.34, 0.52, 0.95);
+          put(g, new THREE.SphereGeometry(0.36, 20, 16), M(0xb9c1ca, 0.35, { metalness: 0.65 }), 0, 1.32, 0);
+          put(g, new THREE.BoxGeometry(0.4, 0.07, 0.05), M(0x2c2118, 0.5), 0, 1.32, 0.34, false);
+          var plume = put(g, new THREE.ConeGeometry(0.1, 0.42, 10), M(0xb23a2e, 0.7), 0, 1.72, -0.08); plume.rotation.x = -0.35;
+          var shield = put(g, new THREE.BoxGeometry(0.08, 0.62, 0.48), M(0x7a4a26, 0.7), -0.52, 0.72, 0.1); shield.rotation.y = 0.3;
+          put(g, new THREE.BoxGeometry(0.05, 0.3, 0.2), M(0xd99a26, 0.4, { metalness: 0.6 }), -0.57, 0.78, 0.1, false);
+          g.userData.kind = "knight";
+        } else if (name.indexOf("Marta") !== -1){
+          var w = makeWitch(0x3f5a54, 0xb9b0a4); g.add(w); g.userData.kind = "witch";
+        } else if (name.indexOf("Coral") !== -1){
+          var tailC = put(g, new THREE.ConeGeometry(0.42, 1.0, 16), M(0x4fb3a9, 0.6), 0, 0.5, 0); tailC.rotation.x = Math.PI;
+          put(g, new THREE.CylinderGeometry(0.26, 0.3, 0.5, 14), M(skin, 0.6), 0, 1.05, 0);
+          put(g, new THREE.SphereGeometry(0.11, 10, 10), M(0x8a4a72, 0.6), -0.13, 1.14, 0.22);
+          put(g, new THREE.SphereGeometry(0.11, 10, 10), M(0x8a4a72, 0.6), 0.13, 1.14, 0.22);
+          put(g, new THREE.SphereGeometry(0.35, 18, 14), M(0xd96f32, 0.85), 0, 1.52, -0.05);
+          head(skin, 0.31, 1.44);
+          eyes(g, 1.48, 0.29, 0.11);
+          g.userData.kind = "mermaid";
+        } else if (name.indexOf("Hoot") !== -1){
+          var bd2 = put(g, new THREE.SphereGeometry(0.46, 20, 16), M(0x8a6642, 0.9), 0, 0.82, 0); bd2.scale.y = 1.12;
+          put(g, new THREE.SphereGeometry(0.3, 16, 12), M(0xf3e3c2, 0.8), 0, 0.68, 0.26);
+          var t1 = put(g, new THREE.ConeGeometry(0.09, 0.24, 8), M(0x8a6642, 0.9), -0.26, 1.42, 0); t1.rotation.z = 0.3;
+          var t2 = put(g, new THREE.ConeGeometry(0.09, 0.24, 8), M(0x8a6642, 0.9), 0.26, 1.42, 0); t2.rotation.z = -0.3;
+          put(g, new THREE.SphereGeometry(0.115, 12, 10), M(0xffffff, 0.4), -0.15, 1.06, 0.4, false);
+          put(g, new THREE.SphereGeometry(0.115, 12, 10), M(0xffffff, 0.4), 0.15, 1.06, 0.4, false);
+          put(g, new THREE.SphereGeometry(0.05, 8, 8), M(0x1c1410, 0.3), -0.15, 1.06, 0.5, false);
+          put(g, new THREE.SphereGeometry(0.05, 8, 8), M(0x1c1410, 0.3), 0.15, 1.06, 0.5, false);
+          var bk = put(g, new THREE.ConeGeometry(0.07, 0.14, 8), M(0xe8a91c, 0.6), 0, 0.94, 0.46); bk.rotation.x = Math.PI / 2;
+          g.userData.kind = "owl";
+        } else if (name.indexOf("Grum") !== -1){
+          g.scale.setScalar(1.22);
+          body(0x7d8c5c, 0.4, 0.62, 0.9);
+          put(g, new THREE.SphereGeometry(0.42, 18, 14), M(0xd9e6a3, 0.7), 0, 0.45, 0.24);
+          head(0x8a9a68, 0.4, 1.24);
+          put(g, new THREE.SphereGeometry(0.13, 10, 10), M(0x8a9a68, 0.7), 0, 1.16, 0.38);
+          eyes(g, 1.32, 0.38, 0.15);
+          var e1 = put(g, new THREE.ConeGeometry(0.09, 0.3, 8), M(0x8a9a68, 0.8), -0.44, 1.3, 0); e1.rotation.z = 1.2;
+          var e2 = put(g, new THREE.ConeGeometry(0.09, 0.3, 8), M(0x8a9a68, 0.8), 0.44, 1.3, 0); e2.rotation.z = -1.2;
+          g.userData.kind = "troll";
+        } else if (name.indexOf("Velvet") !== -1){
+          body(0x2c2430, 0.3, 0.58, 1.0);
+          var collar = put(g, new THREE.CylinderGeometry(0.3, 0.16, 0.22, 14, 1, true), M(0x7a1f2b, 0.7, { side: THREE.DoubleSide }), 0, 1.08, 0);
+          put(g, new THREE.SphereGeometry(0.35, 18, 14), M(0x1e1a22, 0.9), 0, 1.42, -0.06);
+          head(0xf2e4da, 0.32, 1.36);
+          eyes(g, 1.4, 0.3, 0.11);
+          put(g, new THREE.OctahedronGeometry(0.06), EM(0xd64533, 0.8), 0, 1.06, 0.3, false);
+          g.userData.kind = "vampire";
+        } else if (name.indexOf("Felix") !== -1){
+          g.scale.setScalar(0.85);
+          body(0xe0913c, 0.3, 0.46, 0.8);
+          put(g, new THREE.SphereGeometry(0.26, 14, 12), M(0xf6ecd7, 0.7), 0, 0.42, 0.28);
+          head(0xe0913c, 0.35, 1.22);
+          eyes(g, 1.28, 0.33, 0.13);
+          put(g, new THREE.SphereGeometry(0.07, 8, 8), M(0xd96f8a, 0.6), 0, 1.18, 0.35, false);
+          var a1 = put(g, new THREE.ConeGeometry(0.11, 0.26, 8), M(0xe0913c, 0.8), -0.2, 1.56, 0); a1.rotation.z = 0.2;
+          var a2 = put(g, new THREE.ConeGeometry(0.11, 0.26, 8), M(0xe0913c, 0.8), 0.2, 1.56, 0); a2.rotation.z = -0.2;
+          var tl = put(g, new THREE.CylinderGeometry(0.045, 0.06, 0.7, 8), M(0xe0913c, 0.8), 0.42, 0.5, -0.25); tl.rotation.z = -0.7;
+          put(g, new THREE.SphereGeometry(0.07, 10, 8), EM(0xf2c14e, 0.7), 0, 0.88, 0.4, false);
+          g.userData.kind = "cat";
+        } else {
+          body(0x5b4a72, 0.3, 0.55, 0.95);
+          head(skin, 0.33, 1.3);
+          eyes(g, 1.34, 0.31, 0.12);
+          var hood = put(g, new THREE.ConeGeometry(0.42, 0.6, 16, 1, true), M(0x5b4a72, 0.85, { side: THREE.DoubleSide }), 0, 1.52, -0.03);
+          g.userData.kind = "traveler";
+        }
+        return g;
+      }
+      // ---------- renderers ----------
+      function makeRenderer(){
+        var r = new THREE.WebGLRenderer({ antialias: true });
+        r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        r.shadowMap.enabled = true;
+        r.shadowMap.type = THREE.PCFShadowMap;
+        r.outputColorSpace = THREE.SRGBColorSpace;
+        r.toneMapping = THREE.ACESFilmicToneMapping;
+        r.toneMappingExposure = 1.12;
+        return r;
+      }
+      var frontRenderer, roomRenderer;
+      try { frontRenderer = makeRenderer(); roomRenderer = makeRenderer(); }
+      catch (e) { showErr("WebGL could not start — showing the painted shop instead."); return; }
+      window.__glLive = true;
+
+      var anim = { front: [], room: [] }; // {obj, fn(t, dt)}
+      function onTick(list, obj, fn){ var e = { obj: obj, fn: fn }; list.push(e); return e; }
+
+      // ================= STOREFRONT SCENE =================
+      var frontScene = new THREE.Scene();
+      frontScene.background = new THREE.Color(0x2b1b3d);
+      frontScene.fog = new THREE.Fog(0x2b1b3d, 17, 34);
+      var frontCam = new THREE.PerspectiveCamera(38, 2, 0.1, 100);
+      var FRONT_CAM = { x: 0, y: 2.5, z: 9.6, lx: 0, ly: 1.3, lz: -0.4 };
+      frontCam.position.set(FRONT_CAM.x, FRONT_CAM.y, FRONT_CAM.z);
+      frontCam.lookAt(FRONT_CAM.lx, FRONT_CAM.ly, FRONT_CAM.lz);
+
+      frontScene.add(new THREE.HemisphereLight(0x9a7bc0, 0x3a2a1a, 0.85));
+      var key = new THREE.DirectionalLight(0xffd9a0, 2.0);
+      key.position.set(6, 9, 7); key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      key.shadow.camera.left = -9; key.shadow.camera.right = 9; key.shadow.camera.top = 9; key.shadow.camera.bottom = -6;
+      key.shadow.bias = -0.0004;
+      frontScene.add(key);
+      var windowLight = new THREE.PointLight(0xffb45e, 22, 10, 1.6);
+      windowLight.position.set(1.4, 1.7, 1.2); frontScene.add(windowLight);
+
+      // sky: moon + stars
+      var moon = put(frontScene, new THREE.CircleGeometry(0.62, 32), new THREE.MeshBasicMaterial({ color: 0xf5e7c8 }), -6.4, 5.8, -11, false);
+      sprite(frontScene, 0xf5e7c8, 3.4, -6.4, 5.8, -10.8, 0.35);
+      (function(){
+        var n = 130, pos = new Float32Array(n * 3);
+        for (var i = 0; i < n; i++){ pos[i * 3] = (Math.random() - 0.5) * 34; pos[i * 3 + 1] = 3.4 + Math.random() * 6; pos[i * 3 + 2] = -12 + Math.random() * 3; }
+        var geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        var pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: glowTex, color: 0xfff2cf, size: 0.16, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
+        frontScene.add(pts);
+      })();
+      // distant hills + trees
+      [[-11, -9.5, 7], [10.5, -10, 8], [0, -13, 11]].forEach(function(h){
+        var hill = put(frontScene, new THREE.SphereGeometry(h[2], 20, 14), M(0x241a33, 1), h[0], -h[2] * 0.55, h[1], false);
+        hill.castShadow = false;
+      });
+      function tree(parent, x, z, s, color){
+        var g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s); parent.add(g);
+        put(g, new THREE.CylinderGeometry(0.09, 0.14, 0.7, 8), M(0x4a3220, 1), 0, 0.35, 0);
+        put(g, new THREE.ConeGeometry(0.75, 1.5, 10), M(color, 1), 0, 1.35, 0);
+        put(g, new THREE.ConeGeometry(0.55, 1.1, 10), M(color, 1), 0, 2.05, 0);
+        return g;
+      }
+      tree(frontScene, -6.8, -3.4, 1.5, 0x2a4230); tree(frontScene, 7.4, -3.8, 1.7, 0x24382a);
+      tree(frontScene, -8.6, -1, 1.1, 0x2a4230); tree(frontScene, 9.2, -0.6, 1.2, 0x2f4a30);
+      tree(frontScene, -5.4, 3.8, 0.75, 0x35543a); tree(frontScene, 6.2, 4.6, 0.7, 0x35543a);
+
+      // ground + cobble path
+      var ground = put(frontScene, new THREE.CircleGeometry(17, 40), M(0x3d5c3a, 1), 0, 0, 0, false);
+      ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+      for (var pi = 0; pi < 6; pi++){
+        var stone = put(frontScene, new THREE.CylinderGeometry(0.42 + (pi % 2) * 0.08, 0.46, 0.06, 9), M(pi % 2 ? 0x8d8272 : 0x7d7264, 1), 1.55 + Math.sin(pi * 1.7) * 0.22, 0.03, 5.6 - pi * 0.78, false);
+        stone.receiveShadow = true;
+      }
+      // grass tufts + mushrooms
+      for (var gi = 0; gi < 14; gi++){
+        var gx = (Math.random() - 0.5) * 13, gz = 1 + Math.random() * 5.5;
+        if (Math.abs(gx - 1.6) < 1 && gz > 0.5) continue;
+        var tuft = put(frontScene, new THREE.ConeGeometry(0.09, 0.3, 6), M(0x4a7048, 1), gx, 0.15, gz, false);
+        tuft.rotation.z = (Math.random() - 0.5) * 0.4;
+      }
+      function mushroom(parent, x, z, s){
+        var g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s); parent.add(g);
+        put(g, new THREE.CylinderGeometry(0.07, 0.1, 0.22, 8), M(0xf3e3c2, 0.9), 0, 0.11, 0);
+        put(g, new THREE.SphereGeometry(0.17, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), M(0xb23a2e, 0.7), 0, 0.2, 0);
+        return g;
+      }
+      mushroom(frontScene, -3.4, 2.6, 1); mushroom(frontScene, -3.05, 2.9, 0.65); mushroom(frontScene, 4.6, 1.8, 0.85);
+
+      // ----- the shop -----
+      var shop = new THREE.Group(); shop.position.set(0.5, 0, -1.7); frontScene.add(shop);
+      put(shop, new THREE.BoxGeometry(4.9, 0.5, 3.0), M(0x8a7a68, 1), 0, 0.25, 0); // stone base
+      put(shop, new THREE.BoxGeometry(4.6, 2.15, 2.7), M(0xf3e3c2, 0.95), 0, 1.57, 0); // walls
+      // timber beams
+      [-2.28, 2.28].forEach(function(bx){ put(shop, new THREE.BoxGeometry(0.16, 2.15, 0.1), M(0x6e4a2c, 0.9), bx, 1.57, 1.36); });
+      put(shop, new THREE.BoxGeometry(4.66, 0.16, 0.1), M(0x6e4a2c, 0.9), 0, 2.6, 1.36);
+      // roof prism
+      (function(){
+        var shape = new THREE.Shape();
+        shape.moveTo(-2.85, 0); shape.lineTo(2.85, 0); shape.lineTo(0, 1.85); shape.closePath();
+        var geo = new THREE.ExtrudeGeometry(shape, { depth: 3.1, bevelEnabled: false });
+        var roof = new THREE.Mesh(geo, M(0x7a4433, 0.95));
+        roof.position.set(0, 2.62, -1.55); roof.castShadow = true; roof.receiveShadow = true; shop.add(roof);
+        var ridge = put(shop, new THREE.CylinderGeometry(0.09, 0.09, 3.2, 8), M(0x5d3222, 0.95), 0, 4.47, 0);
+        ridge.rotation.x = Math.PI / 2;
+      })();
+      // chimney + smoke
+      put(shop, new THREE.BoxGeometry(0.55, 1.0, 0.55), M(0x8a7a68, 1), 1.5, 4.15, -0.3);
+      var smokes = [];
+      for (var si = 0; si < 3; si++){
+        var sm = sprite(shop, 0xcfc4de, 0.7, 1.5, 4.85 + si * 0.5, -0.3, 0.4);
+        sm.userData.ph = si / 3; smokes.push(sm);
+      }
+      onTick(anim.front, smokes, function(t){
+        smokes.forEach(function(sm){
+          var p = (t * 0.14 + sm.userData.ph) % 1;
+          sm.position.y = 4.8 + p * 1.7; sm.position.x = 1.5 + Math.sin(p * 5 + sm.userData.ph * 9) * 0.22 + p * 0.5;
+          sm.material.opacity = 0.42 * (1 - p); var sc = 0.55 + p * 1.1; sm.scale.set(sc, sc, 1);
+        });
+      });
+      // door + knob + step
+      put(shop, new THREE.BoxGeometry(0.98, 1.78, 0.09), M(0x7a4a26, 0.85), -1.35, 1.14, 1.37);
+      put(shop, new THREE.SphereGeometry(0.055, 10, 8), M(0xd99a26, 0.35, { metalness: 0.7 }), -0.98, 1.14, 1.44, false);
+      put(shop, new THREE.BoxGeometry(1.3, 0.12, 0.5), M(0x8a7a68, 1), -1.35, 0.06, 1.6);
+      // round window, glowing, with bottle silhouettes
+      var winRing = put(shop, new THREE.TorusGeometry(0.56, 0.075, 10, 28), M(0x6e4a2c, 0.85), 0.75, 1.72, 1.37);
+      put(shop, new THREE.CircleGeometry(0.55, 28), new THREE.MeshBasicMaterial({ color: 0xffca7a }), 0.75, 1.72, 1.36, false);
+      put(shop, new THREE.BoxGeometry(0.06, 1.06, 0.04), M(0x6e4a2c, 0.85), 0.75, 1.72, 1.39, false);
+      put(shop, new THREE.BoxGeometry(1.06, 0.06, 0.04), M(0x6e4a2c, 0.85), 0.75, 1.72, 1.39, false);
+      [[0.52, 0xa35ce8], [0.78, 0x5fc98a], [1.0, 0x6fb7d6]].forEach(function(b){
+        put(shop, new THREE.CylinderGeometry(0.07, 0.085, 0.3, 10), EM(b[1], 0.85), b[0], 1.56, 1.42, false);
+      });
+      // small square window
+      put(shop, new THREE.BoxGeometry(0.72, 0.72, 0.06), M(0x6e4a2c, 0.85), 1.95, 1.78, 1.36);
+      put(shop, new THREE.BoxGeometry(0.58, 0.58, 0.07), new THREE.MeshBasicMaterial({ color: 0xffd9a0 }), 1.95, 1.78, 1.36, false);
+      // flower box under round window
+      put(shop, new THREE.BoxGeometry(1.35, 0.26, 0.32), M(0x6e4a2c, 0.9), 0.75, 0.98, 1.5);
+      [0xff8fb3, 0xffffff, 0xf2c14e, 0xff8fb3, 0xe59ac2].forEach(function(fc, i){
+        put(shop, new THREE.SphereGeometry(0.085, 8, 8), M(fc, 0.6), 0.28 + i * 0.24, 1.16, 1.52, false);
+        put(shop, new THREE.SphereGeometry(0.11, 8, 8), M(0x4a7048, 1), 0.2 + i * 0.26, 1.08, 1.46, false);
+      });
+      // serving counter + awning + bottles
+      put(shop, new THREE.BoxGeometry(4.3, 1.0, 0.72), M(0x6e4a2c, 0.9), 0, 0.5, 1.78);
+      put(shop, new THREE.BoxGeometry(4.5, 0.12, 0.95), M(0x8a5f36, 0.85), 0, 1.06, 1.82);
+      [[-1.7, 0x5fc98a], [-1.35, 0xa35ce8], [1.45, 0xf2c14e], [1.8, 0xd64533], [0.1, 0x6fb7d6]].forEach(function(b){
+        put(shop, new THREE.CylinderGeometry(0.075, 0.095, 0.34, 10), EM(b[1], 0.95), b[0], 1.29, 1.86, false);
+        put(shop, new THREE.CylinderGeometry(0.035, 0.035, 0.1, 8), M(0xa97c50, 0.8), b[0], 1.5, 1.86, false);
+      });
+      var awning = put(shop, new THREE.BoxGeometry(4.7, 0.07, 1.35), new THREE.MeshStandardMaterial({ map: awningTex, roughness: 0.85 }), 0, 2.42, 1.95);
+      awning.rotation.x = -0.38;
+      [-2.2, 2.2].forEach(function(px){ put(shop, new THREE.CylinderGeometry(0.045, 0.045, 1.35, 8), M(0x6e4a2c, 0.9), px, 1.7, 2.5); });
+      // hanging sign on a post
+      var signPost = new THREE.Group(); signPost.position.set(4.3, 0, 1.2); frontScene.add(signPost);
+      put(signPost, new THREE.CylinderGeometry(0.07, 0.09, 2.9, 10), M(0x5d3d22, 0.95), 0, 1.45, 0);
+      put(signPost, new THREE.BoxGeometry(1.15, 0.11, 0.11), M(0x5d3d22, 0.95), -0.5, 2.78, 0);
+      var signPivot = new THREE.Group(); signPivot.position.set(-0.95, 2.72, 0); signPost.add(signPivot);
+      put(signPivot, new THREE.CylinderGeometry(0.018, 0.018, 0.3, 6), M(0x2c2118, 0.6), -0.35, -0.15, 0, false);
+      put(signPivot, new THREE.CylinderGeometry(0.018, 0.018, 0.3, 6), M(0x2c2118, 0.6), 0.35, -0.15, 0, false);
+      var signBoard = put(signPivot, new THREE.BoxGeometry(1.35, 0.68, 0.05), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.8 }), 0, -0.62, 0);
+      onTick(anim.front, signPivot, function(t){ signPivot.rotation.z = REDUCED ? 0 : Math.sin(t * 0.9) * 0.055; });
+      // lantern by the door
+      var lantern = new THREE.Group(); lantern.position.set(-2.35, 2.15, 0.2); shop.add(lantern);
+      put(lantern, new THREE.BoxGeometry(0.2, 0.28, 0.2), M(0x2c2118, 0.6), 0, 0, 0);
+      put(lantern, new THREE.BoxGeometry(0.13, 0.18, 0.13), EM(0xffc46b, 1.6), 0, 0, 0, false);
+      sprite(lantern, 0xffb45e, 1.1, 0, 0, 0, 0.55);
+      var lanternLight = new THREE.PointLight(0xffa64d, 10, 7, 1.6); lanternLight.position.set(-2.35, 2.15, 0.6); shop.add(lanternLight);
+      onTick(anim.front, lanternLight, function(t){ lanternLight.intensity = 10 + Math.sin(t * 7.3) * 1.2 + Math.sin(t * 13.7) * 0.8; });
+      // bushes
+      [[-2.9, 0.3], [3.1, 0.2], [-2.6, -1.4], [3.3, -1.5]].forEach(function(b){
+        var bush = put(shop, new THREE.SphereGeometry(0.5, 12, 10), M(0x35543a, 1), b[0], 0.32, b[1]);
+        bush.scale.y = 0.75;
+      });
+      // fireflies
+      var flies = (function(){
+        var n = 24, pos = new Float32Array(n * 3), seeds = [];
+        for (var i = 0; i < n; i++){ pos[i * 3] = (Math.random() - 0.5) * 12; pos[i * 3 + 1] = 0.5 + Math.random() * 2.4; pos[i * 3 + 2] = 1 + Math.random() * 5; seeds.push(Math.random() * 20); }
+        var geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        var pts = new THREE.Points(geo, new THREE.PointsMaterial({ map: glowTex, color: 0xffd76e, size: 0.3, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
+        frontScene.add(pts);
+        return { pts: pts, seeds: seeds, base: pos.slice() };
+      })();
+      onTick(anim.front, flies, function(t){
+        var p = flies.pts.geometry.attributes.position;
+        for (var i = 0; i < flies.seeds.length; i++){
+          p.array[i * 3] = flies.base[i * 3] + Math.sin(t * 0.5 + flies.seeds[i]) * 0.5;
+          p.array[i * 3 + 1] = flies.base[i * 3 + 1] + Math.sin(t * 0.8 + flies.seeds[i] * 2) * 0.3;
+        }
+        p.needsUpdate = true;
+      });
+
+      // characters at the storefront
+      var frontWitch = makeWitch(); frontWitch.position.set(-2.7, 0, 1.5); frontWitch.rotation.y = 0.55; frontScene.add(frontWitch);
+      onTick(anim.front, frontWitch, function(t){ frontWitch.position.y = REDUCED ? 0 : Math.abs(Math.sin(t * 1.7)) * 0.05; frontWitch.rotation.y = 0.55 + (REDUCED ? 0 : Math.sin(t * 0.7) * 0.08); });
+      var queueGhost = makeCustomer("Madame Whisper, Ghost"); queueGhost.position.set(3.0, 0, 4.7); queueGhost.rotation.y = -0.7; queueGhost.scale.setScalar(0.85); frontScene.add(queueGhost);
+      var queueFairy = makeCustomer("Pip the Fairy"); queueFairy.position.set(-2.9, 0, 4.3); queueFairy.rotation.y = 0.7; frontScene.add(queueFairy);
+      onTick(anim.front, queueGhost, function(t){ queueGhost.position.y = REDUCED ? 0.12 : 0.12 + Math.sin(t * 1.3 + 2) * 0.07; });
+      onTick(anim.front, queueFairy, function(t){ queueFairy.position.y = REDUCED ? 0.1 : 0.1 + Math.sin(t * 2.1 + 1) * 0.06; });
+      // ================= POTION ROOM SCENE =================
+      var roomScene = new THREE.Scene();
+      roomScene.background = new THREE.Color(0x1d1420);
+      roomScene.fog = new THREE.Fog(0x1d1420, 15, 30);
+      var roomCam = new THREE.PerspectiveCamera(42, 2, 0.1, 100);
+      var ROOM_CAM = { x: 0, y: 2.4, z: 8.8, lx: 0, ly: 1.35, lz: -0.6 };
+      roomCam.position.set(ROOM_CAM.x, ROOM_CAM.y, ROOM_CAM.z);
+      roomCam.lookAt(ROOM_CAM.lx, ROOM_CAM.ly, ROOM_CAM.lz);
+      roomScene.add(new THREE.HemisphereLight(0xffe0b8, 0x2a1a12, 0.55));
+      var moonLight = new THREE.DirectionalLight(0x8fb4ff, 0.7);
+      moonLight.position.set(-3, 5, 2); roomScene.add(moonLight);
+      var fireLight = new THREE.PointLight(0xff8a3c, 26, 11, 1.5);
+      fireLight.position.set(1.0, 0.9, 0.7); roomScene.add(fireLight);
+      onTick(anim.room, fireLight, function(t){ fireLight.intensity = 26 + Math.sin(t * 8.1) * 3 + Math.sin(t * 15.3) * 2; });
+
+      // floor, walls, rug, beams
+      var floor = put(roomScene, new THREE.PlaneGeometry(17, 13), M(0x6e4a2c, 0.95), 0, 0, 2, false);
+      floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+      put(roomScene, new THREE.PlaneGeometry(17, 8), M(0xa8895f, 0.95), 0, 4, -2.4, false).receiveShadow = true;
+      var rug = put(roomScene, new THREE.CircleGeometry(2.1, 28), M(0x7a3b4a, 1), 0.4, 0.012, 2.6, false);
+      rug.rotation.x = -Math.PI / 2; rug.receiveShadow = true;
+      [-3.4, 3.6].forEach(function(bx){ put(roomScene, new THREE.BoxGeometry(0.28, 5.4, 0.28), M(0x5d3d22, 0.95), bx, 2.7, -2.25); });
+      put(roomScene, new THREE.BoxGeometry(9.5, 0.3, 0.3), M(0x5d3d22, 0.95), 0, 5.35, -2.25);
+      // moon window
+      put(roomScene, new THREE.BoxGeometry(1.7, 2.3, 0.12), M(0x5d3d22, 0.9), -1.9, 3.1, -2.32);
+      put(roomScene, new THREE.PlaneGeometry(1.5, 2.1), new THREE.MeshBasicMaterial({ map: moonWinTex }), -1.9, 3.1, -2.24, false);
+      sprite(roomScene, 0x8fb4ff, 2.6, -1.9, 3.1, -1.9, 0.16);
+      // doorway (customer waits here)
+      put(roomScene, new THREE.BoxGeometry(1.3, 2.5, 0.1), M(0x5d3d22, 0.9), -4.35, 1.25, -2.3);
+      put(roomScene, new THREE.PlaneGeometry(1.05, 2.25), new THREE.MeshBasicMaterial({ color: 0x120a16 }), -4.35, 1.13, -2.24, false);
+      // shelves with bottles
+      var palette = [0xa35ce8, 0x5fc98a, 0xf2c14e, 0xd64533, 0x6fb7d6, 0xe59ac2, 0x4fb3a9, 0xe8a91c];
+      var seed = 7; function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+      function shelfUnit(x, rotY){
+        var u = new THREE.Group(); u.position.set(x, 0, -2.0); u.rotation.y = rotY || 0; roomScene.add(u);
+        put(u, new THREE.BoxGeometry(0.14, 3.3, 0.55), M(0x5d3d22, 0.95), -1.35, 1.65, 0);
+        put(u, new THREE.BoxGeometry(0.14, 3.3, 0.55), M(0x5d3d22, 0.95), 1.35, 1.65, 0);
+        [1.15, 2.0, 2.85].forEach(function(sy){
+          put(u, new THREE.BoxGeometry(2.85, 0.09, 0.55), M(0x7a4a26, 0.9), 0, sy, 0);
+          for (var bx = -1.15; bx <= 1.15; bx += 0.33){
+            if (rnd() < 0.14) continue;
+            var col = palette[Math.floor(rnd() * palette.length)];
+            var bh = 0.26 + rnd() * 0.18;
+            put(u, new THREE.CylinderGeometry(0.085, 0.105, bh, 10), EM(col, 0.75), bx, sy + 0.05 + bh / 2, 0, false);
+            put(u, new THREE.CylinderGeometry(0.032, 0.032, 0.09, 8), M(0xa97c50, 0.8), bx, sy + 0.05 + bh + 0.04, 0, false);
+          }
+        });
+        return u;
+      }
+      shelfUnit(-0.1, 0); shelfUnit(3.1, 0); shelfUnit(-3.3, 0);
+      // hanging herb bundles
+      [[-2.9, 0x5d8a4a], [-0.6, 0x8a6fb8], [1.8, 0x5d8a4a], [4.3, 0xc9a24a]].forEach(function(hb){
+        var g = new THREE.Group(); g.position.set(hb[0], 5.2, -1.7); roomScene.add(g);
+        put(g, new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6), M(0xa97c50, 0.9), 0, -0.25, 0, false);
+        var cone = put(g, new THREE.ConeGeometry(0.17, 0.62, 10), M(hb[1], 0.95), 0, -0.8, 0);
+        cone.rotation.x = Math.PI;
+        onTick(anim.room, g, function(t){ g.rotation.z = REDUCED ? 0 : Math.sin(t * 0.8 + hb[0]) * 0.05; });
+      });
+      // side table with spell book + candle
+      var table = new THREE.Group(); table.position.set(-3.1, 0, 1.4); table.rotation.y = 0.5; roomScene.add(table);
+      put(table, new THREE.BoxGeometry(1.5, 0.09, 0.9), M(0x7a4a26, 0.9), 0, 0.78, 0);
+      [[-0.65, -0.35], [0.65, -0.35], [-0.65, 0.35], [0.65, 0.35]].forEach(function(l){ put(table, new THREE.BoxGeometry(0.09, 0.78, 0.09), M(0x5d3d22, 0.95), l[0], 0.39, l[1]); });
+      var bookL = put(table, new THREE.BoxGeometry(0.52, 0.04, 0.68), M(0xf6ecd7, 0.9), -0.24, 0.9, 0); bookL.rotation.z = 0.16;
+      var bookR = put(table, new THREE.BoxGeometry(0.52, 0.04, 0.68), M(0xf6ecd7, 0.9), 0.24, 0.9, 0); bookR.rotation.z = -0.16;
+      put(table, new THREE.CylinderGeometry(0.05, 0.06, 0.22, 10), M(0xf3e3c2, 0.7), 0.55, 0.94, -0.25);
+      var flame = sprite(table, 0xffc46b, 0.34, 0.55, 1.14, -0.25, 0.85);
+      onTick(anim.room, flame, function(t){ var s = 0.32 + Math.sin(t * 9.2) * 0.035; flame.scale.set(s, s * 1.25, 1); });
+      put(table, new THREE.CylinderGeometry(0.16, 0.19, 0.14, 12), M(0x8a7a68, 0.9), -0.55, 0.9, 0.22);
+      // the great cauldron over its fire
+      var potG = new THREE.Group(); potG.position.set(1.0, 0, 0.55); roomScene.add(potG);
+      for (var sti = 0; sti < 9; sti++){
+        var ang = sti / 9 * Math.PI * 2;
+        put(potG, new THREE.BoxGeometry(0.3, 0.2, 0.24), M(0x6e6258, 1), Math.cos(ang) * 0.78, 0.1, Math.sin(ang) * 0.78);
+      }
+      [[0.3, 0.15], [-0.25, -0.2], [0, 0.3]].forEach(function(lg){
+        var log = put(potG, new THREE.CylinderGeometry(0.06, 0.06, 0.55, 8), M(0x5d3d22, 1), lg[0], 0.16, lg[1]);
+        log.rotation.z = Math.PI / 2; log.rotation.y = lg[0] * 3;
+      });
+      var flames = [];
+      [[0xff9a3c, 0.34, 0, 0], [0xffc93c, 0.24, 0.18, 0.1], [0xff7a2e, 0.26, -0.16, -0.08]].forEach(function(f){
+        var fl = put(potG, new THREE.ConeGeometry(0.13, f[1], 8), new THREE.MeshBasicMaterial({ color: f[0] }), f[2], 0.32, f[3], false);
+        flames.push(fl);
+      });
+      onTick(anim.room, flames, function(t){
+        flames.forEach(function(fl, i){ var s = 1 + Math.sin(t * 9 + i * 2.1) * 0.18; fl.scale.set(1, s, 1); });
+      });
+      var potBody = put(potG, new THREE.SphereGeometry(0.66, 22, 16), M(0x33302e, 0.45, { metalness: 0.35 }), 0, 0.82, 0);
+      potBody.scale.y = 0.8;
+      put(potG, new THREE.TorusGeometry(0.52, 0.05, 10, 26), M(0x232120, 0.45, { metalness: 0.35 }), 0, 1.18, 0).rotation.x = Math.PI / 2;
+      put(potG, new THREE.CircleGeometry(0.5, 26), EM(0x86d95e, 0.85), 0, 1.17, 0, false).rotation.x = -Math.PI / 2;
+      sprite(potG, 0x86d95e, 1.5, 0, 1.3, 0, 0.3);
+      var bubbles = [];
+      for (var bi = 0; bi < 5; bi++){
+        var bb = put(potG, new THREE.SphereGeometry(0.05 + (bi % 3) * 0.02, 10, 8), EM(0xbff0a0, 0.9), Math.cos(bi * 2.4) * 0.26, 1.2, Math.sin(bi * 2.4) * 0.26, false);
+        bb.userData.ph = bi / 5; bubbles.push(bb);
+      }
+      onTick(anim.room, bubbles, function(t){
+        bubbles.forEach(function(bb){
+          var p = (t * 0.45 + bb.userData.ph) % 1;
+          bb.position.y = 1.18 + p * 0.3; bb.material.opacity = 1;
+          var s = 0.7 + p * 0.9; bb.scale.set(s, s, s);
+        });
+      });
+      var steams = [];
+      for (var smi = 0; smi < 4; smi++){
+        var st = sprite(potG, 0xd8f0c8, 0.8, 0, 1.5, 0, 0.3);
+        st.userData.ph = smi / 4; steams.push(st);
+      }
+      onTick(anim.room, steams, function(t){
+        steams.forEach(function(st){
+          var p = (t * 0.16 + st.userData.ph) % 1;
+          st.position.y = 1.45 + p * 1.6; st.position.x = Math.sin(p * 6 + st.userData.ph * 8) * 0.25;
+          st.material.opacity = 0.3 * (1 - p); var sc = 0.7 + p * 1.3; st.scale.set(sc, sc, 1);
+        });
+      });
+      // witch stirring + customer peeking from the doorway
+      var roomWitch = makeWitch(); roomWitch.position.set(0.05, 0, 1.15); roomWitch.rotation.y = 0.85; roomScene.add(roomWitch);
+      var spoon = put(roomScene, new THREE.CylinderGeometry(0.03, 0.035, 1.15, 8), M(0xa97c50, 0.85), 0.62, 1.35, 0.85);
+      spoon.rotation.z = 0.6; spoon.rotation.x = 0.3;
+      onTick(anim.room, spoon, function(t){ if (!REDUCED){ spoon.rotation.z = 0.6 + Math.sin(t * 1.6) * 0.13; spoon.rotation.x = 0.3 + Math.cos(t * 1.6) * 0.1; } });
+      onTick(anim.room, roomWitch, function(t){ roomWitch.position.y = REDUCED ? 0 : Math.abs(Math.sin(t * 1.7 + 0.6)) * 0.04; });
+      var roomCust = null;
+
+      // ---------- customer swapping ----------
+      var frontCust = null, custTicks = [];
+      function placeCustomers(name){
+        if (frontCust){ frontScene.remove(frontCust); roomScene.remove(roomCust); }
+        custTicks.forEach(function(e){
+          var fi = anim.front.indexOf(e); if (fi !== -1) anim.front.splice(fi, 1);
+          var ri = anim.room.indexOf(e); if (ri !== -1) anim.room.splice(ri, 1);
+        });
+        custTicks = [];
+        frontCust = makeCustomer(name);
+        frontCust.position.set(2.05, 0, 3.55); frontCust.rotation.y = -0.55;
+        frontScene.add(frontCust);
+        roomCust = makeCustomer(name);
+        roomCust.position.set(-4.3, 0, -1.15); roomCust.rotation.y = 0.65;
+        roomScene.add(roomCust);
+        var fc = frontCust, rc = roomCust;
+        custTicks.push(onTick(anim.front, fc, function(t){
+          var base = fc.userData.float ? 0.14 : 0;
+          fc.position.y = REDUCED ? base : base + Math.abs(Math.sin(t * 1.9 + 1)) * 0.055;
+        }));
+        custTicks.push(onTick(anim.room, rc, function(t){
+          var base = rc.userData.float ? 0.14 : 0;
+          rc.position.y = REDUCED ? base : base + Math.sin(t * 1.4 + 3) * 0.04;
+        }));
+      }
+      window.setSceneCustomer = placeCustomers;
+      placeCustomers("Bramble the Dragon");
+
+      // ---------- mounts, sizing, render loop ----------
+      var mounts = { bg: document.getElementById("mountBg"), room: document.getElementById("mountRoom") };
+      function fit(renderer, cam){
+        var m = renderer.domElement.parentNode;
+        if (!m || !m.clientWidth || !m.clientHeight) return false;
+        var key = m.clientWidth + "x" + m.clientHeight;
+        if (renderer.__fitKey !== key){
+          renderer.__fitKey = key;
+          renderer.setSize(m.clientWidth, m.clientHeight, false);
+          cam.aspect = m.clientWidth / m.clientHeight; cam.updateProjectionMatrix();
+        }
+        return true;
+      }
+      function mount(renderer, el){
+        if (!el) return;
+        if (renderer.domElement.parentNode !== el){
+          el.appendChild(renderer.domElement);
+          el.classList.add("gl-on");
+        }
+      }
+      var px = 0, py = 0, tx = 0, ty = 0;
+      document.addEventListener("pointermove", function(e){
+        tx = (e.clientX / window.innerWidth - 0.5) * 2;
+        ty = (e.clientY / window.innerHeight - 0.5) * 2;
+      }, { passive: true });
+      function visible(id){ var el = document.getElementById(id); return el && !el.classList.contains("hidden"); }
+      var clock = new THREE.Clock();
+      function frame(){
+        requestAnimationFrame(frame);
+        var t = clock.getElapsedTime();
+        try {
+          px += (tx - px) * 0.045; py += (ty - py) * 0.045;
+          var i;
+          if (false && (visible("screenStart") || (visible("screenGame") && visible("phaseMemorize")))){ // front backdrop is the isometric shop art now — 3D storefront retired
+            mount(frontRenderer, mounts.bg);
+            if (fit(frontRenderer, frontCam)){
+              for (i = 0; i < anim.front.length; i++) anim.front[i].fn(t, 0);
+              // Full-screen framing: on narrow/portrait screens, widen the FOV and
+              // pull the camera back (fog pushed out to match) so the whole shop fits.
+              var asp = frontCam.aspect || 1.6;
+              var zoom = asp >= 1.5 ? 1 : Math.min(2.7, Math.pow(1.5 / asp, 0.92));
+              frontCam.fov = asp >= 1.5 ? 38 : 38 + (1.5 - asp) * 11;
+              frontCam.updateProjectionMatrix();
+              frontScene.fog.near = 16 * zoom; frontScene.fog.far = 36 * zoom;
+              frontCam.position.x = FRONT_CAM.x + (REDUCED ? 0 : px * 0.55);
+              frontCam.position.y = FRONT_CAM.y + (zoom - 1) * 1.1 - (REDUCED ? 0 : py * 0.28);
+              frontCam.position.z = FRONT_CAM.z * zoom;
+              frontCam.lookAt(FRONT_CAM.lx, FRONT_CAM.ly, FRONT_CAM.lz);
+              frontRenderer.render(frontScene, frontCam);
+            }
+          } else if (visible("screenGame") && visible("phaseBrew") && mounts.room){
+            mount(roomRenderer, mounts.room);
+            if (fit(roomRenderer, roomCam)){
+              for (i = 0; i < anim.room.length; i++) anim.room[i].fn(t, 0);
+              if (!REDUCED){ roomCam.position.x = ROOM_CAM.x + px * 0.5; roomCam.position.y = ROOM_CAM.y - py * 0.25; roomCam.lookAt(ROOM_CAM.lx, ROOM_CAM.ly, ROOM_CAM.lz); }
+              roomRenderer.render(roomScene, roomCam);
+            }
+          }
+        } catch (err) {
+          if (window.__glLive){ window.__glLive = false; showErr("The 3D shop hit a snag — the painted shop is still here."); }
+        }
+      }
+      frame();
+    })();
+    </script>
+  </body>
+</html>
